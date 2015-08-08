@@ -1,0 +1,28 @@
+{
+  "name": "app",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular": "latest",
+    "jquery": "latest",
+    "angular-ui-router": "latest",
+    "ngstorage": "latest",
+    "angular-http-auth": "latest",
+    "yasgui-yasqe": "latest",
+    "angular-bootstrap": "latest",
+    "bootstrap": "latest",
+    "font-awesome": "latest",
+    "angular-hotkeys": "chieffancypants/angular-hotkeys",
+    "angular-utf8-base64": "latest"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": [
+        "less/bootstrap.less",
+        "dist/js/bootstrap.js",
+        "dist/css/bootstrap.css"
+      ]
+    }
+  },
+  "devDependencies": {
+  }
+}

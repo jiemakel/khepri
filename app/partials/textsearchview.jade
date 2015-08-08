@@ -1,0 +1,7 @@
+.form-group
+  label Search
+  input.form-control(ng-model="text",ng-keyup="$event.keyCode == 13 && setConstraint(text+'*')")
+  ul.list-unstyled(infinite-scroll="scrollInstances()",infinite-scroll-parent,infinite-scroll-distance="5")
+    li.item(ng-repeat="keyword in keywords",ng-click="setConstraint(keyword.keyword,$event.ctrlKey)",ng-class="{selected:constraints.indexOf(keyword.keyword)!=-1}") 
+      span {{keyword.keyword}}
+      span.item-count.pull-right {{keyword.instances}}
