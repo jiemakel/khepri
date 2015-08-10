@@ -11,6 +11,7 @@
     "angular-bootstrap": "latest",
     "bootstrap": "latest",
     "font-awesome": "latest",
+    "angular-ui-bootstrap": "latest",
     "angular-hotkeys": "chieffancypants/angular-hotkeys",
     "angular-utf8-base64": "latest"
   },

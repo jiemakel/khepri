@@ -3,8 +3,12 @@
     .col-xs-3
       h4 Constrain
       text-search-view(id="'tsv'")
-    .col-xs-3
-      h4 Filter
+      class-tree-view(id="'edu'")
+    div(ng-class="wide ? 'col-xs-9' : 'col-xs-3'")
+      h4 
+        button.btn.btn-sm.btn-default
+          span.glyphicon.glyphicon-resize-horizontal(ng-click="wide=!wide")
+        | Filter
       results-view
-    .col-xs-6
+    .col-xs-6(ng-show="!wide")
       h4 View

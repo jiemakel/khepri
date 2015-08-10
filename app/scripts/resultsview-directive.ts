@@ -2,9 +2,11 @@ module app {
 
   interface IResultsViewScope extends angular.IScope {
     results : Result[]
+    filter : (r : Result) => void
   }
 
   class Result {
+    filtered = false
     constructor(public id: string,public label: string, public snippet : string) {}
   }
 
@@ -33,8 +35,10 @@ module app {
     `
     private timeout : angular.IPromise<any>
     link = (scope: IResultsViewScope, element: JQuery, attr: angular.IAttributes) => {
+      scope.filter = (r : Result) => {
+        r.filtered = !r.filtered
+      }
       scope.$on('updateConstraint',(e:angular.IAngularEvent,constraintString:string,constraints:{}) => {
-        console.log(constraints)
         this.canceler.resolve();
         var keywords = ""
         for (let key in constraints) if (constraints[key].keywords) constraints[key].keywords.forEach(keyword => keywords+=this.sparqlService.stringToSPARQLString(keyword));

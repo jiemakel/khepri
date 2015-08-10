@@ -1,5 +1,5 @@
 module app {
-  var m = angular.module("app", [ 'http-auth-interceptor', 'ngStorage', 'ui.router' ])
+  var m = angular.module("app", [ 'http-auth-interceptor', 'ngStorage', 'ui.router', 'ui.bootstrap' ])
   m.config(($stateProvider : angular.ui.IStateProvider,$urlRouterProvider : angular.ui.IUrlRouterProvider) => {
     $urlRouterProvider.otherwise('/')
     $stateProvider.state('main', {
