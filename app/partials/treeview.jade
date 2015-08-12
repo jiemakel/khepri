@@ -1,7 +1,7 @@
 script(type="text/ng-template",id="treenode.html")
   span {{node.label}}
   span.pull-right {{node.matchingInstances}}/{{node.instances}}
-  ul
-    li.item(ng-repeat="node in node.children",ng-include="'treenode.html'")
+  ul.list-unstyled
+    li.item(ng-repeat="node in node.children",ng-include="'treenode.html'",ng-click="selectElement(node,$event.ctrlKey);$event.stopPropagation()",ng-class="{selected:isSelected(node)}")
 ul.list-unstyled
-  li.item(ng-repeat="node in tree",ng-include="'treenode.html'")
+  li.item(ng-repeat="node in tree",ng-include="'treenode.html'",ng-click="selectElement(node,$event.ctrlKey);$event.stopPropagation()",ng-class="{selected:isSelected(node)}")

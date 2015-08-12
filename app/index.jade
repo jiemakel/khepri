@@ -29,10 +29,13 @@ html(lang="en",ng-app="app")
           button.btn.btn-success(ng-click="setAuth()") Ok
           button.btn.btn-danger(ng-click="dismissAuth()") Cancel
     main(ui-view="")
+    script(src="https://www.google.com/jsapi")
+    script(type="text/javascript").
+      google.load('visualization', '1.0', {'packages':['corechart','annotationchart','calendar','gauge','geochart','map','orgchart','sankey','table','timeline','treemap','charteditor']});
     // build:js(app) scripts/vendor.js
     // bower:js
-    script(src='bower_components/jquery/dist/jquery.js')
     script(src='bower_components/angular/angular.js')
+    script(src='bower_components/jquery/dist/jquery.js')
     script(src='bower_components/angular-ui-router/release/angular-ui-router.js')
     script(src='bower_components/ngstorage/ngStorage.js')
     script(src='bower_components/angular-http-auth/src/http-auth-interceptor.js')
@@ -52,6 +55,7 @@ html(lang="en",ng-app="app")
     script(src="scripts/textsearchview-directive.js")
     script(src="scripts/resultsview-directive.js")
     script(src="scripts/treeview-directive.js")
+    script(src="scripts/googlechartview-directive.js")
     script(src="scripts/main-ctrl.js")
     // inject:partials
     // endinject

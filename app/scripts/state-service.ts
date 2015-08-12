@@ -6,6 +6,7 @@ module app {
 
   export interface IConstraint {
     constraintString : string
+    order : number
   }
 
   export class StateService {
@@ -25,9 +26,13 @@ module app {
     }
 
     private updateConstraintString() {
-      this.constraintString = ""
-      for (var id in this.state.constraints)
-        this.constraintString += this.state.constraints[id].constraintString;
+      var orderedConstraints = []
+      for (var id in this.state.constraints) {
+        if (!orderedConstraints[this.state.constraints[id].order]) orderedConstraints[this.state.constraints[id].order]=""
+        orderedConstraints[this.state.constraints[id].order]+=this.state.constraints[id].constraintString
+      }
+      this.constraintString=""
+      orderedConstraints.filter(v => v).forEach(v => this.constraintString+=v);
       this.$rootScope.$broadcast('updateConstraint',this.constraintString,this.state.constraints)
     }
 

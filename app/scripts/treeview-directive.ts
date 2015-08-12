@@ -5,8 +5,9 @@ module app {
     templateUrl = 'partials/treeview.html'
   }
 
-  interface TreeViewScope extends angular.IScope {
-    selectElement : (id : string) => void
+  interface ITreeViewScope extends angular.IScope {
+    selectElement : (id : TreeNode, add?) => void
+    isSelected : (id : TreeNode) => boolean
     tree : TreeNode[]
   }
 
@@ -16,6 +17,16 @@ module app {
       this.matchingInstances=instances
     }
     children : TreeNode[] = []
+  }
+
+  class TreeViewConstraints implements IConstraint {
+    order = 5
+    constructor(public constraintString : string,public values: TreeNode[]) { }
+  }
+
+  interface IClassTreeViewScope extends ITreeViewScope {
+    id : string
+    constraints : TreeNode[]
   }
 
   export class ClassTreeViewDirective extends TreeView {
@@ -44,7 +55,6 @@ module app {
       }
     `
     private static getClassCountsQuery = `
-      PREFIX text: <http://jena.apache.org/text#>
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX cs: <http://ldf.fi/ceec-schema#>
@@ -55,14 +65,27 @@ module app {
       }
       GROUP BY ?class
     `
+    private canceler : angular.IDeferred<{}>
     constructor(private $q : angular.IQService, private configService : ConfigService, private stateService : StateService, public sparqlService : SparqlService) {
       super()
+      this.canceler = $q.defer();
     }
-    selectElement = (id : string) => {
-      console.log(id)
+    private updateCounts = (node : TreeNode, counts : {[id:string] : number}) => {
+      node.matchingInstances = counts[node.id] ? counts[node.id] : 0
+      node.children.forEach(node => this.updateCounts(node,counts));
     }
-    link = (scope: TreeViewScope, element: JQuery, attr: angular.IAttributes) => {
-      scope.selectElement = this.selectElement
+    link = (scope: IClassTreeViewScope, element: JQuery, attr: angular.IAttributes) => {
+      scope.constraints = []
+      scope.selectElement = (value,add = false) => {
+        if (!add) scope.constraints = [value]; else scope.constraints.push(value)
+        var constraintString = ""
+        scope.constraints.forEach(constraint => {
+          constraintString +=`{ ?id crm:P28_custody_surrendered_by/cs:education/rdfs:subClassOf* <${constraint.id}> } UNION`
+        });
+        constraintString = constraintString.substr(0,constraintString.length-6);
+        this.stateService.setConstraint(scope.id,new TreeViewConstraints(constraintString,scope.constraints));
+      }
+      scope.isSelected = (id) => scope.constraints.indexOf(id)!=-1
       this.sparqlService.query(this.configService.config.sparqlEndpoint,ClassTreeViewDirective.getClassTreeQuery).then(
         (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
           var parents : {[id:string]:{[id:string]:boolean}}= {}
@@ -81,11 +104,25 @@ module app {
             if (!parents[id]) scope.tree.push(classes[id]); else for (let pid in parents[id])
                 classes[pid].children.push(classes[id])
           }
-          console.log(scope.tree)
         },
         (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
       )
+      scope.$on('updateConstraint',(e:angular.IAngularEvent,constraintString:string,constraints:{}) => {
+        this.canceler.resolve();
+        var keywords = ""
+        for (let key in constraints) if (constraints[key].keywords) constraints[key].keywords.forEach(keyword => keywords+=this.sparqlService.stringToSPARQLString(keyword));
+        this.sparqlService.query(this.configService.config.sparqlEndpoint,this.configService.config.prefixes+ClassTreeViewDirective.getClassCountsQuery.replace(/# CONSTRAINTS/g,constraintString)).then(
+          (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
+            var counts : {[id:string] : number} = {}
+            response.data.results.bindings.forEach(r => counts[r['class'].value]=parseInt(r['instances'].value))
+            scope.tree.forEach(tn => this.updateCounts(tn,counts))
+          }
+          ,
+          (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
+        )
+      })
     }
+
   }
 
 }

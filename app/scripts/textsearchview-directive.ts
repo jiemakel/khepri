@@ -13,6 +13,7 @@ module app {
   }
 
   class TextSearchConstraints implements IConstraint {
+    order = 1
     constructor(public constraintString : string,public keywords: string[]) { }
   }
 

@@ -12,6 +12,7 @@
     "files": [
         "app/scripts/app.ts",
         "app/scripts/config-service.ts",
+        "app/scripts/googlechartview-directive.ts",
         "app/scripts/main-ctrl.ts",
         "app/scripts/resultsview-directive.ts",
         "app/scripts/sparql-service.ts",
@@ -20,6 +21,8 @@
         "app/scripts/treeview-directive.ts",
         "typings/angular-ui-router/angular-ui-router.d.ts",
         "typings/angularjs/angular.d.ts",
-        "typings/jquery/jquery.d.ts"
+        "typings/google.visualization/google.visualization.d.ts",
+        "typings/jquery/jquery.d.ts",
+        "typings/tsd.d.ts"
     ]
 }

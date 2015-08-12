@@ -3,4 +3,4 @@ script(type="text/ng-template",id="popover.html")
 input.form-control(ng-model="text")
 ul.list-unstyled(infinite-scroll="scrollInstances()",infinite-scroll-parent,infinite-scroll-distance="5")
   li.item(ng-repeat="result in results",ng-click="filter(result)",ng-style="result.filtered ? {'text-decoration': 'line-through'} : {}",popover-template="'popover.html'",popover-trigger="mouseenter")
-    span {{result.snippet}}
+    span {{result.snippet ? result.snippet : result.label}}
