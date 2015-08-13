@@ -7,7 +7,7 @@ module app {
 
   class Result {
     filtered = false
-    constructor(public id: string,public label: string, public snippet : string) {}
+    constructor(public id: string,public label: string, public fulltext : string, public snippet : string) {}
   }
 
   export class ResultsViewDirective implements angular.IDirective {
@@ -21,8 +21,12 @@ module app {
     private static resultQuery = `
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
       PREFIX cs: <http://ldf.fi/ceec-schema#>
-      SELECT ?id ?label ?snippet {
-        # CONSTRAINTS
+      SELECT ?id ?label ?fulltext ?snippet {
+        {
+          SELECT DISTINCT ?id {
+            # CONSTRAINTS
+          }
+        }
         ?id skos:prefLabel ?label .
         OPTIONAL {
           ?id cs:fulltext ?fulltext .
@@ -35,9 +39,15 @@ module app {
       }
     `
     private timeout : angular.IPromise<any>
+    private filtered : {[id:string]:boolean} = {}
     link = (scope: IResultsViewScope, element: JQuery, attr: angular.IAttributes) => {
       scope.filter = (r : Result) => {
         r.filtered = !r.filtered
+        this.filtered[r.id]=r.filtered
+        var constraintString = "FILTER ("
+        for (let id in this.filtered) if (this.filtered[id]) constraintString+=`?id!=<${id}> && `
+        constraintString=constraintString.substr(0,constraintString.length-4)+")";
+        this.stateService.setFilterConstraint('rv',{constraintString,order:1});
       }
       scope.$on('updateConstraint',(e:angular.IAngularEvent,constraintString:string,constraints:{}) => {
         this.canceler.resolve();
@@ -45,7 +55,7 @@ module app {
         for (let key in constraints) if (constraints[key].keywords) constraints[key].keywords.forEach(keyword => keywords+=this.sparqlService.stringToSPARQLString(keyword));
         this.sparqlService.query(this.configService.config.sparqlEndpoint,this.configService.config.prefixes+ResultsViewDirective.resultQuery.replace(/# CONSTRAINTS/g,constraintString).replace(/<KEYWORDS>/g,keywords)).then(
           (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) =>
-            scope.results = response.data.results.bindings.map(r => { return new Result(r['id'].value,r['label'].value,r['snippet'] ? r['snippet'].value : undefined); })
+            scope.results = response.data.results.bindings.map(r => { return new Result(r['id'].value,r['label'].value,r['fulltext'] ? r['fulltext'].value : undefined,r['snippet'] ? r['snippet'].value : undefined); })
           ,
           (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
         )

@@ -28,7 +28,6 @@ html(lang="en",ng-app="app")
       .modal-footer
           button.btn.btn-success(ng-click="setAuth()") Ok
           button.btn.btn-danger(ng-click="dismissAuth()") Cancel
-    main(ui-view="")
     script(src="https://www.google.com/jsapi")
     script(type="text/javascript").
       google.load('visualization', '1.0', {'packages':['corechart','annotationchart','calendar','gauge','geochart','map','orgchart','sankey','table','timeline','treemap','charteditor']});
@@ -60,4 +59,5 @@ html(lang="en",ng-app="app")
     // inject:partials
     // endinject
     // endbuild
+    main(ui-view="")
     .modal-backdrop.fade.in(ng-show="authOpen")

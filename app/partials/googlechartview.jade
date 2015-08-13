@@ -1,2 +1,4 @@
-button(ng-click="openEditor()") Edit
+select.form-control(ng-model="selectedGrouping",ng-options="availableGrouping.label for availableGrouping in availableGroupings")
+  option(value="") total
 #chartWrapper
+button(ng-click="openEditor()") Edit

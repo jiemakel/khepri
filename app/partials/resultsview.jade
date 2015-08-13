@@ -1,6 +1,6 @@
 script(type="text/ng-template",id="popover.html")
-  span {{result.label}}
+  .small {{result.fulltext}}
 input.form-control(ng-model="text")
 ul.list-unstyled(infinite-scroll="scrollInstances()",infinite-scroll-parent,infinite-scroll-distance="5")
-  li.item(ng-repeat="result in results",ng-click="filter(result)",ng-style="result.filtered ? {'text-decoration': 'line-through'} : {}",popover-template="'popover.html'",popover-trigger="mouseenter")
+  li.item(ng-repeat="result in results",ng-click="filter(result)",ng-style="result.filtered ? {'text-decoration': 'line-through'} : {}",popover-template="'popover.html'",popover-trigger="mouseenter",popover-title="{{result.label}}",popover-placement="bottom")
     span {{result.snippet ? result.snippet : result.label}}
