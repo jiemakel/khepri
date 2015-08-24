@@ -43,7 +43,7 @@ module app {
     link = (scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
       scope.constraints = []
       scope.setConstraint = (value,add = false) => {
-        if (!add) scope.constraints = [value]; else scope.constraints.push(value)
+        if (!add) scope.constraints = ['"'+value+'"']; else scope.constraints.push('"'+value+'"')
         var constraintString = ""
         scope.constraints.forEach(constraint => {
           constraintString +=`{ ?id text:query ${this.sparqlService.stringToSPARQLString(constraint)} } UNION`
