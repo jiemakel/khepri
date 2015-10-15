@@ -6,7 +6,7 @@ html(lang="en",ng-app="app")
     // build:css(app) styles/vendor.css
     // bower:css
     link(rel='stylesheet', href='bower_components/bootstrap/dist/css/bootstrap.css')
-    link(rel='stylesheet', href='bower_components/angular-hotkeys/build/hotkeys.min.css')
+    link(rel='stylesheet', href='bower_components/angular-hotkeys/build/hotkeys.css')
     // endbower
     link(rel='stylesheet', href='bower_components/yasgui-yasqe/dist/yasqe.css')
     // endbuild
@@ -41,7 +41,7 @@ html(lang="en",ng-app="app")
     script(src='bower_components/yasgui-yasqe/dist/yasqe.bundled.min.js')
     script(src='bower_components/angular-bootstrap/ui-bootstrap-tpls.js')
     script(src='bower_components/bootstrap/dist/js/bootstrap.js')
-    script(src='bower_components/angular-hotkeys/build/hotkeys.min.js')
+    script(src='bower_components/angular-hotkeys/build/hotkeys.js')
     script(src='bower_components/angular-utf8-base64/angular-utf8-base64.js')
     // endbower
     // endbuild
@@ -60,4 +60,4 @@ html(lang="en",ng-app="app")
     // endinject
     // endbuild
     main(ui-view="")
-    .modal-backdrop.fade.in(ng-show="authOpen")
+    .uib-modal-backdrop.fade.in(ng-show="authOpen")

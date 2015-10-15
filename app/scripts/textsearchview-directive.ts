@@ -5,6 +5,8 @@ module app {
     constraints : string[]
     id : string
     setConstraint : (string,add?) => void
+    text : string
+    query2 : string
   }
 
   interface ITextSearchResult {
@@ -35,15 +37,18 @@ module app {
         ?id a cs:Letter .
         ?id cs:fulltext ?fulltext .
         FILTER(REGEX(?fulltext,"<QUERY2>","i"))
-        BIND(LCASE(REPLACE(?fulltext,".*(<QUERY2>\\\\w*).*","$1","si")) AS ?keyword)
+        BIND(LCASE(REPLACE(?fulltext,".*?(<QUERY2>).*","$1","si")) AS ?keyword)
       }
       GROUP BY ?keyword
     `
     private timeout : angular.IPromise<any>
     link = (scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
       scope.constraints = []
-      scope.setConstraint = (value,add = false) => {
-        if (!add) scope.constraints = ['"'+value+'"']; else scope.constraints.push('"'+value+'"')
+      scope.setConstraint = (value, replace=false) => {
+        value='"'+value+'"'
+        if (replace) scope.constraints = [value]
+        else if (scope.constraints.indexOf(value)!=-1) scope.constraints.splice(scope.constraints.indexOf(value))
+        else scope.constraints.push(value)
         var constraintString = ""
         scope.constraints.forEach(constraint => {
           constraintString +=`{ ?id text:query ${this.sparqlService.stringToSPARQLString(constraint)} } UNION`
@@ -51,12 +56,12 @@ module app {
         constraintString = constraintString.substr(0,constraintString.length-6);
         this.stateService.setConstraint(scope.id,new TextSearchConstraints(constraintString,scope.constraints));
       }
-      scope.$watch('text',(nv,ov) => { if (nv) {
+      scope.$watch('query2',(nv,ov) => { if (nv) {
         this.$timeout.cancel(this.timeout)
         this.timeout = this.$timeout(() => {
           this.canceler.resolve();
           this.canceler = this.$q.defer();
-          this.sparqlService.query(this.configService.config.sparqlEndpoint,TextSearchViewDirective.textSearchQuery.replace(/<QUERY>/g,this.sparqlService.stringToSPARQLString(nv+"*")).replace(/<QUERY2>/g,nv),{timeout:this.canceler.promise}).then(
+          this.sparqlService.query(this.configService.config.sparqlEndpoint,TextSearchViewDirective.textSearchQuery.replace(/<QUERY>/g,this.sparqlService.stringToSPARQLString(scope.text)).replace(/<QUERY2>/g,scope.query2),{timeout:this.canceler.promise}).then(
             (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
               scope.keywords = response.data.results.bindings.map((r) => {
                 return {
@@ -68,6 +73,10 @@ module app {
             (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
           )
         },200)
+      }})
+      scope.$watch('text',(nv,ov) => { if (nv) {
+        scope.query2=nv.replace(/"/g,"").replace(/\*/g,"\\\\w*").trim()
+        this.$timeout.cancel(this.timeout)
       }})
     }
   }

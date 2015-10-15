@@ -4,12 +4,15 @@
       h4 Constrain
       text-search-view(id="'tsv'")
       class-tree-view(id="'edu'")
-    div(ng-class="wide ? 'col-xs-9' : 'col-xs-3'")
+    div(ng-class="wide==1 ? 'col-xs-9' : 'col-xs-4'",ng-show="wide!=2")
       h4 
-        button.btn.btn-sm.btn-default
-          span.glyphicon.glyphicon-resize-horizontal(ng-click="wide=!wide")
+        button.btn.btn-sm.btn-default(ng-click="wide = (wide == 1 ? 0 : 1)")
+          span.glyphicon.glyphicon-resize-horizontal
         | Filter
-      results-view
-    .col-xs-6(ng-show="!wide")
-      h4 View
+      results-view(width="wide==1 ? 80 : 30")
+    div(ng-class="wide==2 ? 'col-xs-9' : 'col-xs-5'",ng-show="wide!=1")
+      h4
+        button.btn.btn-sm.btn-default(ng-click="wide = (wide == 2 ? 0 : 2)")
+          span.glyphicon.glyphicon-resize-horizontal
+        | View
       google-chart-view

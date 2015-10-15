@@ -1,4 +1,24 @@
 select.form-control(ng-model="selectedGrouping",ng-options="availableGrouping.label for availableGrouping in availableGroupings")
   option(value="") total
-#chartWrapper
-button(ng-click="openEditor()") Edit
+
+div
+  h4 Current query
+  #chartWrapper
+
+div(ng-repeat="(name,query) in savedQueries")
+  h4 {{name}}
+  div(ng-attr-id="{{ 'chartWrapper-' + $index }}")
+
+input.form-control(type="text",ng-model="movingSpan")
+
+.btn-group
+    label.btn.btn-success(ng-model="movingType", uib-btn-radio="'median'")  median
+    label.btn.btn-success(ng-model="movingType", uib-btn-radio="'average'") average
+    label.btn.btn-success(ng-model="movingType", uib-btn-radio="'sum'") sum
+    label.btn.btn-success(ng-model="movingType", uib-btn-radio="'accumulation'") accumulation
+.btn-group
+  label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'count'")  absolute count
+  label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'apercentage'") weighted average of authors
+  label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'lpercentage'") weighted average of texts
+  label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'wpercentage'") instances per million words
+button.btn.btn-primary(ng-click="openEditor()") Edit
