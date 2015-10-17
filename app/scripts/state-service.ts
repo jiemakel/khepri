@@ -1,83 +1,68 @@
-module app {
+namespace app {
+  'use strict'
 
   class State {
-    current : QueryState = new QueryState()
-    savedQueries : { [id: string]: QueryState } = {}
+    private _queries: { [queryId: string]: QueryState } = {}
+    public get queries(): { [queryId: string]: QueryState } {
+      return this._queries
+    }
+    public getQueryState(queryId: string): QueryState {
+      if (!this._queries[queryId]) this.queries[queryId] = new QueryState()
+      return this._queries[queryId]
+    }
   }
 
   export class QueryState {
-    clone = () => {
-      let ret = new QueryState()
-      ret.constraintString=this.constraintString
-      ret.filterConstraintString=this.filterConstraintString
-      return ret
-    }
-    constraintString : string = "";
-    filterConstraintString : string = "";
-    constraints: { [id: string]: IConstraint } = {}
-    filterConstraints : { [id: string]: IConstraint } = {}
+    public constraints: { [id: string]: IConstraint } = {}
   }
 
   export interface IConstraint {
-    constraintString : string
-    order : number
+    constraintString: string
+    order: number
+  }
+
+  export class SimpleConstraint implements IConstraint {
+    constructor(
+      public constraintString: string,
+      public order: number
+    ) { }
   }
 
   export class StateService {
 
-    private state : State;
+    private state: State;
 
-    constructor(private $rootScope : angular.IRootScopeService,$localStorage) {
-      if (!$localStorage.state) $localStorage.state = new State();
+    constructor(private $rootScope: angular.IRootScopeService) {
       this.state = new State();
     }
 
-    setConstraint(id : string, constraint : IConstraint) {
-      this.state.current.constraints[id] = constraint;
-      this.updateConstraintString();
+    public setConstraint(queryId: string, constraintId: string, constraint: IConstraint): void {
+      this.state.getQueryState(queryId).constraints[constraintId] = constraint
+      this.$rootScope.$broadcast('updateConstraint', queryId, constraintId)
     }
 
-    setFilterConstraint(id : string, constraint: IConstraint) {
-      this.state.current.filterConstraints[id]=constraint;
-      this.updateFilterConstraintString();
+    public getQueries(): { [id: string]: QueryState } {
+      return this.state.queries
     }
 
-    saveConstraint(id : string) {
-      this.state.savedQueries[id]=this.state.current.clone()
+    public getQueryState(queryId: string): QueryState {
+      return this.state.getQueryState(queryId)
     }
 
-    getSavedConstraints() {
-      return this.state.savedQueries
+    public setQueryState(queryId: string, QueryState: QueryState): void {
+      this.state[queryId] = QueryState
+      this.$rootScope.$broadcast('updateConstraint', queryId)
     }
 
-    private updateFilterConstraintString() {
-      var orderedConstraints = []
-      for (var id in this.state.current.filterConstraints) {
-        if (!orderedConstraints[this.state.current.filterConstraints[id].order]) orderedConstraints[this.state.current.filterConstraints[id].order]=""
-        orderedConstraints[this.state.current.filterConstraints[id].order]+=this.state.current.filterConstraints[id].constraintString
+    public getConstraintString(queryId: string, constraintIdsToFilter: { [id: string]: boolean } = {}): string {
+      let orderedConstraints: string[] = []
+      for (let constraintId in this.state.getQueryState(queryId).constraints) if (!constraintIdsToFilter[constraintId]) {
+        if (!orderedConstraints[this.state.queries[queryId].constraints[constraintId].order]) orderedConstraints[this.state.queries[queryId].constraints[constraintId].order] = ''
+        orderedConstraints[this.state.queries[queryId].constraints[constraintId].order] += this.state.queries[queryId].constraints[constraintId].constraintString
       }
-      this.state.current.filterConstraintString=""
-      orderedConstraints.filter(v => v).forEach(v => this.state.current.filterConstraintString+=v);
-      this.$rootScope.$broadcast('updateFilterConstraint',this.state.current.filterConstraintString,this.state.current.filterConstraints)
-    }
-
-    private updateConstraintString() {
-      var orderedConstraints = []
-      for (var id in this.state.current.constraints) {
-        if (!orderedConstraints[this.state.current.constraints[id].order]) orderedConstraints[this.state.current.constraints[id].order]=""
-        orderedConstraints[this.state.current.constraints[id].order]+=this.state.current.constraints[id].constraintString
-      }
-      this.state.current.constraintString=""
-      orderedConstraints.filter(v => v).forEach(v => this.state.current.constraintString+=v);
-      this.$rootScope.$broadcast('updateConstraint',this.state.current.constraintString,this.state.current.constraints)
-    }
-
-    getConstraints() {
-      return this.state.current.constraintString;
-    }
-
-    getFilterConstraints() {
-      return this.state.current.filterConstraintString;
+      let constraintString: string = ''
+      orderedConstraints.filter(v => v !== '').forEach(v => constraintString += v);
+      return constraintString
     }
 
   }

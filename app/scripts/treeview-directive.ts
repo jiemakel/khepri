@@ -1,8 +1,9 @@
-module app {
+namespace app {
+  'use strict'
 
   class TreeView implements angular.IDirective {
-    restrict = 'E'
-    templateUrl = 'partials/treeview.html'
+    public restrict: string = 'E'
+    public templateUrl: string = 'partials/treeview.html'
   }
 
   interface ITreeViewScope extends angular.IScope {
@@ -21,17 +22,22 @@ module app {
 
   class TreeViewConstraints implements IConstraint {
     order = 5
+    public clone(): TreeViewConstraints {
+      return new TreeViewConstraints(this.constraintString, this.values.slice())
+    }
     constructor(public constraintString : string,public values: TreeNode[]) { }
   }
 
   interface IClassTreeViewScope extends ITreeViewScope {
-    id : string
+    queryId : string
+    viewId: string
     constraints : TreeNode[]
   }
 
   export class ClassTreeViewDirective extends TreeView {
     scope = {
-      id : '=id'
+      viewId : '@',
+      queryId : '='
     }
     private static getClassTreeQuery = `
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -83,11 +89,11 @@ module app {
           constraintString +=`{ ?id crm:P28_custody_surrendered_by/cs:education/rdfs:subClassOf* <${constraint.id}> } UNION`
         });
         constraintString = constraintString.substr(0,constraintString.length-6);
-        this.stateService.setConstraint(scope.id,new TreeViewConstraints(constraintString,scope.constraints));
+        this.stateService.setConstraint(scope.queryId,scope.viewId,new TreeViewConstraints(constraintString,scope.constraints));
       }
       scope.isSelected = (id) => scope.constraints.indexOf(id)!=-1
       this.sparqlService.query(this.configService.config.sparqlEndpoint,ClassTreeViewDirective.getClassTreeQuery).then(
-        (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
+        (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
           var parents : {[id:string]:{[id:string]:boolean}}= {}
           var classes : {[id:string]:TreeNode}= {}
           response.data.results.bindings.forEach(binding => {
@@ -112,7 +118,7 @@ module app {
         var keywords = ""
         for (let key in constraints) if (constraints[key].keywords) constraints[key].keywords.forEach(keyword => keywords+=this.sparqlService.stringToSPARQLString(keyword));
         this.sparqlService.query(this.configService.config.sparqlEndpoint,this.configService.config.prefixes+ClassTreeViewDirective.getClassCountsQuery.replace(/# CONSTRAINTS/g,constraintString)).then(
-          (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
+          (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
             var counts : {[id:string] : number} = {}
             response.data.results.bindings.forEach(r => counts[r['class'].value]=parseInt(r['instances'].value))
             scope.tree.forEach(tn => this.updateCounts(tn,counts))

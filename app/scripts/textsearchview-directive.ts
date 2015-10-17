@@ -1,83 +1,122 @@
-module app {
+namespace app {
+  'use strict'
 
   interface ITextSearchViewScope extends angular.IScope {
-    keywords : ITextSearchResult[]
-    constraints : string[]
-    id : string
-    setConstraint : (string,add?) => void
-    text : string
-    query2 : string
+    keywords: ITextSearchResult[]
+    constraints: {[keyword: string]: boolean}
+    queryId: string
+    viewId: string
+    setConstraint: (regex: string, add?: boolean) => void
+    query: string
   }
 
   interface ITextSearchResult {
-    keyword : string
-    instances : number
+    keyword: string
+    matchingInstances: number
+    totalInstances: number
   }
 
-  class TextSearchConstraints implements IConstraint {
-    order = 1
-    constructor(public constraintString : string,public keywords: string[]) { }
+  export class TextSearchConstraint implements IConstraint {
+    public order: number = 1
+    constructor(public constraintString: string, public sparqlRegex: string, public jsRegex: string, public luceneQuery: string) { }
   }
 
   export class TextSearchViewDirective implements angular.IDirective {
-    restrict = 'E'
-    templateUrl = 'partials/textsearchview.html'
-    scope = {
-      id : "=id"
-    }
-    private canceler : angular.IDeferred<{}>
-    constructor(private $timeout: angular.ITimeoutService, private $q : angular.IQService, private sparqlService : SparqlService, private configService : ConfigService, private stateService : StateService) {
-      this.canceler = $q.defer();
-    }
-    private static textSearchQuery = `
+    private static textSearchQuery: string = `
       PREFIX text: <http://jena.apache.org/text#>
       PREFIX cs: <http://ldf.fi/ceec-schema#>
-      SELECT ?keyword (COUNT(*) AS ?instances) {
-        ?id text:query <QUERY> .
-        ?id a cs:Letter .
-        ?id cs:fulltext ?fulltext .
-        FILTER(REGEX(?fulltext,"<QUERY2>","i"))
-        BIND(LCASE(REPLACE(?fulltext,".*?(<QUERY2>).*","$1","si")) AS ?keyword)
+      SELECT ?keyword (COUNT(?tid) AS ?totalInstances) (COUNT(?id) AS ?matchingInstances) {
+        {
+          ?tid text:query "<LUCENE_REGEX>" .
+          ?tid a cs:Letter .
+          ?tid cs:fulltext ?fulltext .
+          FILTER(REGEX(?fulltext, "<SPARQL_REGEX>", "i"))
+          BIND(LCASE(REPLACE(REPLACE(?fulltext, ".*?(<SPARQL_REGEX>).*", "$1", "si"),"\\\\s+"," ")) AS ?keyword)
+        } UNION {
+          ?id text:query "<LUCENE_REGEX>" .
+          ?id a cs:Letter .
+          ?id cs:fulltext ?fulltext .
+          FILTER(REGEX(?fulltext, "<SPARQL_REGEX>", "i"))
+          # CONSTRAINTS
+          BIND(LCASE(REPLACE(REPLACE(?fulltext, ".*?(<SPARQL_REGEX>).*", "$1", "si"),"\\\\s+"," ")) AS ?keyword)
+        }
       }
       GROUP BY ?keyword
+      ORDER BY DESC(?matchingInstances)
     `
-    private timeout : angular.IPromise<any>
-    link = (scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
-      scope.constraints = []
-      scope.setConstraint = (value, replace=false) => {
-        value='"'+value+'"'
-        if (replace) scope.constraints = [value]
-        else if (scope.constraints.indexOf(value)!=-1) scope.constraints.splice(scope.constraints.indexOf(value))
-        else scope.constraints.push(value)
-        var constraintString = ""
-        scope.constraints.forEach(constraint => {
-          constraintString +=`{ ?id text:query ${this.sparqlService.stringToSPARQLString(constraint)} } UNION`
-        });
-        constraintString = constraintString.substr(0,constraintString.length-6);
-        this.stateService.setConstraint(scope.id,new TextSearchConstraints(constraintString,scope.constraints));
+    public restrict: string = 'E'
+    public templateUrl: string = 'partials/textsearchview.html'
+    public scope: {[id: string]: string} = {
+      viewId: '@',
+      queryId: '='
+    }
+    constructor(private $q: angular.IQService, private sparqlService: SparqlService, private configService: ConfigService, private stateService: StateService) {
+      this.canceler = $q.defer();
+    }
+    public link: (...any) => void = ($scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
+      $scope.constraints = {}
+      $scope.keywords = []
+      $scope.setConstraint = (value: string, replace: boolean = false) => {
+        if (!value) {
+          $scope.constraints = {}
+          if (Object.keys($scope.constraints).length !== $scope.keywords.length) $scope.keywords.forEach(k => $scope.constraints[k.keyword] = true)
+        } else {
+          if (replace) {
+            $scope.constraints = {}
+            $scope.constraints[value] = true
+          } else if ($scope.constraints[value]) delete $scope.constraints[value]
+          else $scope.constraints[value] = true
+        }
+        let sparqlRegex: string = ''
+        let jsRegex: string = ''
+        let luceneQuery: string = ''
+        let constraintString: string = ''
+        if (Object.keys($scope.constraints).length > 0) {
+          for (let constraint in $scope.constraints) {
+            luceneQuery += `\\"${constraint}\\" `
+            sparqlRegex += `${constraint.replace(/ /g, '\\\\s+')}|`
+            jsRegex += `${constraint.replace(/ /g, '\\s+')}|`
+          }
+          luceneQuery = luceneQuery.substr(0, luceneQuery.length - 1)
+          sparqlRegex = '(?:\\\\b' + sparqlRegex.substr(0, sparqlRegex.length - 1) + '\\\\b)'
+          jsRegex = '(?:\\b' + jsRegex.substr(0, jsRegex.length - 1) + '\\b)'
+          constraintString = `
+            ?id text:query "${luceneQuery}" .
+            ?id cs:fulltext ?fulltext .
+            FILTER(REGEX(?fulltext,"${sparqlRegex}","i"))
+          `
+        }
+        this.stateService.setConstraint($scope.queryId, $scope.viewId, new TextSearchConstraint(constraintString, sparqlRegex, jsRegex, luceneQuery));
       }
-      scope.$watch('query2',(nv,ov) => { if (nv) {
-        this.$timeout.cancel(this.timeout)
-        this.timeout = this.$timeout(() => {
-          this.canceler.resolve();
-          this.canceler = this.$q.defer();
-          this.sparqlService.query(this.configService.config.sparqlEndpoint,TextSearchViewDirective.textSearchQuery.replace(/<QUERY>/g,this.sparqlService.stringToSPARQLString(scope.text)).replace(/<QUERY2>/g,scope.query2),{timeout:this.canceler.promise}).then(
-            (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult>) => {
-              scope.keywords = response.data.results.bindings.map((r) => {
-                return {
-                  keyword : r['keyword'].value,
-                  instances : parseInt(r['instances'].value)
-                }
-              })
-            },
-            (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
-          )
-        },200)
-      }})
-      scope.$watch('text',(nv,ov) => { if (nv) {
-        scope.query2=nv.replace(/"/g,"").replace(/\*/g,"\\\\w*").trim()
-        this.$timeout.cancel(this.timeout)
+      let query: () => void = () => {
+        this.canceler.resolve()
+        this.canceler = this.$q.defer()
+        let luceneQuery: string = '+/' + $scope.query.replace(/ /g, '/ +/').replace(/\*/g, '[^ ]*').replace(/\?/g, '[^ ]?') + '/'
+        let sparqlRegex: string = '\\\\b' + $scope.query.replace(/ /g, '\\\\s+').replace(/\*/g, '\\\\w*').replace(/\?/g, '\\\\w?') + '\\\\b'
+        let filter: {[id: string]: boolean} = {}
+        filter[$scope.viewId] = true
+        let constraintString: string = this.stateService.getConstraintString($scope.queryId, filter)
+        this.sparqlService.query(this.configService.config.sparqlEndpoint, TextSearchViewDirective.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
+          (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+            let oldKeywords: ITextSearchResult[] = $scope.keywords
+            let keywords: { [keyword: string]: boolean } = {}
+            $scope.keywords = response.data.results.bindings.map(r => {
+              let ret: ITextSearchResult = this.sparqlService.bindingsToObject<ITextSearchResult>(r)
+              keywords[ret.keyword] = true
+              return ret
+            })
+            oldKeywords.filter(k => !keywords[k.keyword] && $scope.constraints[k.keyword]).forEach(k => $scope.keywords.push(k))
+          },
+          (response: angular.IHttpPromiseCallbackArg<string>) => console.log(response)
+        )
+      }
+      $scope.$on('updateConstraint', (e: angular.IAngularEvent, queryId: string, viewId: string) => {
+        if (queryId === $scope.queryId && viewId !== $scope.viewId) query()
+      })
+      $scope.$watch('query', (nv: string) => { if (nv) {
+        query()
       }})
     }
+    private canceler: angular.IDeferred<{}>
   }
 }

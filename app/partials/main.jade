@@ -1,18 +1,39 @@
 .container-fluid
   .row
-    .col-xs-3
-      h4 Constrain
-      text-search-view(id="'tsv'")
-      class-tree-view(id="'edu'")
-    div(ng-class="wide==1 ? 'col-xs-9' : 'col-xs-4'",ng-show="wide!=2")
-      h4 
-        button.btn.btn-sm.btn-default(ng-click="wide = (wide == 1 ? 0 : 1)")
+    uib-tabset(ng-class="state=='filter' ? 'col-xs-12' : (state=='visualization' ? 'col-xs-4': 'col-xs-8')")
+      uib-tab(ng-repeat="query in queries",active="query.active")
+        uib-tab-heading
+          span(ng-show="!editingName",ng-click="query.active && (editingName=true)") {{query.name}}
+          input(ng-show="editingName",ng-model="newName",ng-init="newName=query.name",ng-blur="renameQuery(query,newName)",ng-keyup="($event.keyCode == 13 && (renameQuery(query,newName) || true) && (editingName=false)) || ($event.keyCode == 27 && (editingName=false))")
+          span.glyphicon.glyphicon-remove(ng-show="query.active",ng-click="removeQuery(query)")
+        .container-fluid: .row
+          div(ng-class="state=='filter' ? 'col-xs-2' : (state=='visualization' ? 'col-xs-12' : 'col-xs-3')")
+            h4 Constrain
+            text-search-view(view-id="text-search-view",query-id="query.name")
+          div(ng-class="state=='filter' ? 'col-xs-10' : 'col-xs-9'",ng-show="state!='visualization'")
+            h4 Filter
+              button.btn.btn-sm.btn-default(ng-click="$parent.$parent.$parent.state= $parent.$parent.$parent.state=='filter' ? 'normal' : 'filter'")
+                span.glyphicon.glyphicon-resize-horizontal
+            result-list-view(width="state=='filter' ? 60 : 30",show-metadata="state=='filter'",view-id="result-list-view",query-id="query.name")
+      uib-tab(select="addQuery()")
+        uib-tab-heading
+          span.glyphicon.glyphicon-plus
+    div(ng-class="state=='visualization' ? 'col-xs-8' : 'col-xs-4'",ng-show="state!='filter'")
+      h4 View
+        button.btn.btn-sm.btn-default(ng-click="state= state=='visualization' ? 'normal' : 'visualization'")
           span.glyphicon.glyphicon-resize-horizontal
-        | Filter
-      results-view(width="wide==1 ? 80 : 30")
-    div(ng-class="wide==2 ? 'col-xs-9' : 'col-xs-5'",ng-show="wide!=1")
-      h4
-        button.btn.btn-sm.btn-default(ng-click="wide = (wide == 2 ? 0 : 2)")
-          span.glyphicon.glyphicon-resize-horizontal
-        | View
-      google-chart-view
+      select.form-control(ng-model="selectedGrouping",ng-options="availableGrouping.label for availableGrouping in availableGroupings")
+        option(value="") total            
+      google-chart-view(view-id="google-chart-view",ng-repeat="query in queries",query-id="query")
+      input.form-control(type="text",ng-model="movingSpan")
+      .btn-group
+          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'median'")  median
+          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'average'") average
+          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'sum'") sum
+          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'accumulation'") accumulation
+      .btn-group
+        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'count'")  absolute count
+        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'apercentage'") percentage of authors
+        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'lpercentage'") percentage of texts
+        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'wpercentage'") instances per million words
+        

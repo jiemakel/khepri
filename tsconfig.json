@@ -14,7 +14,7 @@
         "app/scripts/config-service.ts",
         "app/scripts/googlechartview-directive.ts",
         "app/scripts/main-ctrl.ts",
-        "app/scripts/resultsview-directive.ts",
+        "app/scripts/resultlistview-directive.ts",
         "app/scripts/sparql-service.ts",
         "app/scripts/state-service.ts",
         "app/scripts/textsearchview-directive.ts",
@@ -24,5 +24,6 @@
         "typings/google.visualization/google.visualization.d.ts",
         "typings/jquery/jquery.d.ts",
         "typings/tsd.d.ts"
-    ]
+    ],
+    "exclude": []
 }
