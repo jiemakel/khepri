@@ -20,20 +20,7 @@
           span.glyphicon.glyphicon-plus
     div(ng-class="state=='visualization' ? 'col-xs-8' : 'col-xs-4'",ng-show="state!='filter'")
       h4 View
-        button.btn.btn-sm.btn-default(ng-click="state= state=='visualization' ? 'normal' : 'visualization'")
+        button.btn.btn-sm.btn-default(ng-click="state= state=='visualization' ? 'normal' : 'visualization';resize()")
           span.glyphicon.glyphicon-resize-horizontal
-      select.form-control(ng-model="selectedGrouping",ng-options="availableGrouping.label for availableGrouping in availableGroupings")
-        option(value="") total            
-      google-chart-view(view-id="google-chart-view",ng-repeat="query in queries",query-id="query")
-      input.form-control(type="text",ng-model="movingSpan")
-      .btn-group
-          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'median'")  median
-          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'average'") average
-          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'sum'") sum
-          label.btn.btn-success(ng-model="movingType", uib-btn-radio="'accumulation'") accumulation
-      .btn-group
-        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'count'")  absolute count
-        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'apercentage'") percentage of authors
-        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'lpercentage'") percentage of texts
-        label.btn.btn-primary(ng-model="graphType", uib-btn-radio="'wpercentage'") instances per million words
+      multi-google-chart-views(view-id='google-chart-view',queries="queries")
         

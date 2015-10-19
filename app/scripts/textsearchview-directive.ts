@@ -96,7 +96,7 @@ namespace app {
         let filter: {[id: string]: boolean} = {}
         filter[$scope.viewId] = true
         let constraintString: string = this.stateService.getConstraintString($scope.queryId, filter)
-        this.sparqlService.query(this.configService.config.sparqlEndpoint, TextSearchViewDirective.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
+        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + TextSearchViewDirective.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
           (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
             let oldKeywords: ITextSearchResult[] = $scope.keywords
             let keywords: { [keyword: string]: boolean } = {}
@@ -111,7 +111,7 @@ namespace app {
         )
       }
       $scope.$on('updateConstraint', (e: angular.IAngularEvent, queryId: string, viewId: string) => {
-        if (queryId === $scope.queryId && viewId !== $scope.viewId) query()
+        if (queryId === $scope.queryId && viewId !== $scope.viewId && $scope.query) query()
       })
       $scope.$watch('query', (nv: string) => { if (nv) {
         query()

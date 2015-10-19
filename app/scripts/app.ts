@@ -1,6 +1,6 @@
 namespace app {
   'use strict'
-  let m: angular.IModule = angular.module('app', [ 'http-auth-interceptor', 'ngStorage', 'ui.router', 'ui.bootstrap' ])
+  let m: angular.IModule = angular.module('app', [ 'http-auth-interceptor', 'ngStorage', 'ui.router', 'ui.bootstrap', 'ngResize' ])
   m.config(($stateProvider: angular.ui.IStateProvider, $urlRouterProvider: angular.ui.IUrlRouterProvider) => {
     $urlRouterProvider.otherwise('/')
     $stateProvider.state('main', {

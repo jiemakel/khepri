@@ -14,6 +14,7 @@
         "app/scripts/config-service.ts",
         "app/scripts/googlechartview-directive.ts",
         "app/scripts/main-ctrl.ts",
+        "app/scripts/multigooglechartviews-directive.ts",
         "app/scripts/resultlistview-directive.ts",
         "app/scripts/sparql-service.ts",
         "app/scripts/state-service.ts",

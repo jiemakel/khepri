@@ -1,7 +1,7 @@
 namespace app {
   'use strict'
 
-  class Query {
+  export class Query {
     public active: boolean = false
     constructor(public name: string) {}
   }
@@ -12,24 +12,26 @@ namespace app {
     addQuery: () => void
     renameQuery: (oldQuery: Query, newName: string) => void
     removeQuery: (query: Query) => void
+    resize: () => void
   }
 
   export class MainController {
-    constructor(private $scope: IMainScope, private stateService: StateService) {
-      $scope.queries = Object.keys(stateService.getQueries).map(q => new Query(q))
+    constructor(private $scope: IMainScope, private stateService: StateService, private $timeout: angular.ITimeoutService) {
+      $scope.queries = []
       $scope.state = 'normal'
       stateService.getQueryState('unnamed 1')
       $scope.queries.push(new Query('unnamed 1'))
       $scope.queries[0].active = true
+      let count: number = 2
       $scope.addQuery = () => {
-        let name: string = 'unnamed ' + ($scope.queries.length + 1)
+        let name: string = 'unnamed ' + count++
         stateService.getQueryState(name)
         let nq: Query = new Query(name)
         nq.active = true
         $scope.queries.push(nq)
       }
       $scope.renameQuery = (oldQuery: Query, newName: string) => {
-        stateService.getQueries[newName] = stateService.getQueries[oldQuery.name]
+        stateService.getQueries()[newName] = stateService.getQueries()[oldQuery.name]
         delete stateService.getQueries[oldQuery.name]
         oldQuery.name = newName
       }
@@ -37,6 +39,7 @@ namespace app {
         delete stateService.getQueries[query.name]
         $scope.queries.splice($scope.queries.indexOf(query), 1)
       }
+      $scope.resize = () => $timeout(() => $scope.$broadcast('resize'))
     }
   }
 }

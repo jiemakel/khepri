@@ -30,7 +30,7 @@ html(lang="en",ng-app="app",ng-hint)
           button.btn.btn-danger(ng-click="dismissAuth()") Cancel
     script(src="https://www.google.com/jsapi")
     script(type="text/javascript").
-      google.load('visualization', '1.0', {'packages':['corechart','annotationchart','calendar','gauge','geochart','map','orgchart','sankey','table','timeline','treemap','charteditor']});
+      google.load('visualization', '1', {'packages':['corechart']});
     // build:js(app) scripts/vendor.js
     // bower:js
     script(src='bower_components/angular/angular.js')
@@ -43,6 +43,7 @@ html(lang="en",ng-app="app",ng-hint)
     script(src='bower_components/bootstrap/dist/js/bootstrap.js')
     script(src='bower_components/angular-hotkeys/build/hotkeys.js')
     script(src='bower_components/angular-utf8-base64/angular-utf8-base64.js')
+    script(src='bower_components/ng-resize/index.js')
     // endbower
     // endbuild
 
@@ -55,6 +56,7 @@ html(lang="en",ng-app="app",ng-hint)
     script(src="scripts/resultlistview-directive.js")
     script(src="scripts/treeview-directive.js")
     script(src="scripts/googlechartview-directive.js")
+    script(src="scripts/multigooglechartviews-directive.js")
     script(src="scripts/main-ctrl.js")
     // inject:partials
     // endinject
