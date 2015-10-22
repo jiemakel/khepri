@@ -13,7 +13,7 @@
     "angular-ui-bootstrap": "latest",
     "angular-hotkeys": "chieffancypants/angular-hotkeys",
     "angular-utf8-base64": "latest",
-    "ng-resize": "~1.2.0"
+    "ng-resize": "latest"
   },
   "overrides": {
     "bootstrap": {
