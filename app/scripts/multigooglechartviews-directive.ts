@@ -13,6 +13,7 @@ namespace app {
     hideTotals: boolean
     separateGroups: boolean
     accumulation: boolean
+    bootstraps: number
   }
 
   class Data {
@@ -105,6 +106,7 @@ namespace app {
       $scope.avgType = 'total'
       $scope.movingSpan = 20
       $scope.graphType = 'individual'
+      $scope.bootstraps = 1
       $scope.selectedGrouping = null;
       this.sparqlService.query(this.configService.config.sparqlEndpoint, MultiGoogleChartViewsDirective.propertiesQuery).then(
         (response: angular.IHttpPromiseCallbackArg <ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => $scope.availableGroupings = response.data.results.bindings.map(b => new Grouping(b['property'].value, b['propertyLabel'].value))
@@ -191,6 +193,14 @@ namespace app {
               let k: number = 0
               if ($scope.graphType !== 'scattercomparison') groupTitles.forEach((title: string, j: number) => {
                 chart.dataTable.addColumn({id: groupIds[j], label: title, type: 'number'})
+                if (!$scope.accumulation) {
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                  chart.dataTable.addColumn({id: groupIds[j], label: title, role: 'interval', type: 'number'})
+                }
                 series[k++] = {targetAxisIndex: 0}
                 if ($scope.graphType === 'individual' && ($scope.accumulation || !$scope.hideTotals )) {
                   chart.dataTable.addColumn({id: groupIds[j], label: title + ' total', type: 'number'})
@@ -210,6 +220,7 @@ namespace app {
                   title: 'year',
                   format: ''
                 },
+                intervals: { style: 'line' },
                 series: series,
                 vAxes: {
                   0: {title: $scope.accumulation ? 'Percent' : 'Matches/million', minValue: 0, maxValue: $scope.graphType === 'areacomparison' ? 1 : 10},
@@ -262,36 +273,79 @@ namespace app {
                     queryId = chartId
                     group = groupId
                   }
-                  const sumOfMatchesInSpanByAggregation: {[id: string]: number } = {}
-                  const sumOfTotalsInSpanByAggregation: {[id: string]: number } = {}
-                  let sumOfTotalsInSpan: number = 0
+                  const sumOfMatchesInSpanByAggregation: {[id: string]: number }[] = []
+                  const sumOfTotalsInSpanByAggregation: {[id: string]: number }[] = []
+                  let sumOfTotalsInSpan: number[] = []
+                  for (let k: number = 0; k < $scope.bootstraps; k++) {
+                    sumOfTotalsInSpan[k] = 0
+                    sumOfTotalsInSpanByAggregation[k] = {}
+                    sumOfMatchesInSpanByAggregation[k] = {}
+                  }
                   for (let i: number = year - mm; i <= year + mm; i++)
-                    if (d.totalsByYearAndGroupAndAggregation[i]) {
-                      if (d.matchesByYearAndQueryAndGroupAndAggregation[i] && d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId] && d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group]) for (let aggrId in d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group]) {
-                        if (!sumOfMatchesInSpanByAggregation[aggrId]) sumOfMatchesInSpanByAggregation[aggrId] = d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group][aggrId]
-                        else sumOfMatchesInSpanByAggregation[aggrId] += d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group][aggrId]
-                      }
-                      if (d.totalsByYearAndGroupAndAggregation[i][group]) for (let aggrId in d.totalsByYearAndGroupAndAggregation[i][group]) {
-                        if (!sumOfTotalsInSpanByAggregation[aggrId]) sumOfTotalsInSpanByAggregation[aggrId] = d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
-                        else sumOfTotalsInSpanByAggregation[aggrId] += d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
-                        sumOfTotalsInSpan += d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
+                    if (d.totalsByYearAndGroupAndAggregation[i] && d.totalsByYearAndGroupAndAggregation[i][group]) {
+                      for (let k: number = 0; k < $scope.bootstraps; k++) {
+                        const allAggrIds: string[] = Object.keys(d.totalsByYearAndGroupAndAggregation[i][group])
+                        let aggrIds: string[] = []
+                        if ($scope.bootstraps === 1) aggrIds = allAggrIds
+                        else for (let l: number = 0; l < allAggrIds.length; l++) aggrIds[l] = allAggrIds[Math.floor(Math.random() * allAggrIds.length)]
+                        if (d.matchesByYearAndQueryAndGroupAndAggregation[i] && d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId] && d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group]) for (let j: number = 0; j < aggrIds.length; j++) {
+                            let aggrId: string = aggrIds[j]
+                            if (d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group][aggrId]) {
+                              if (!sumOfMatchesInSpanByAggregation[k][aggrId]) sumOfMatchesInSpanByAggregation[k][aggrId] = d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group][aggrId]
+                              else sumOfMatchesInSpanByAggregation[k][aggrId] += d.matchesByYearAndQueryAndGroupAndAggregation[i][queryId][group][aggrId]
+                            }
+                          }
+                        if (d.totalsByYearAndGroupAndAggregation[i][group]) for (let j: number = 0; j < aggrIds.length; j++) {
+                          let aggrId: string = aggrIds[j]
+                          if (!sumOfTotalsInSpanByAggregation[k][aggrId]) sumOfTotalsInSpanByAggregation[k][aggrId] = d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
+                          else sumOfTotalsInSpanByAggregation[k][aggrId] += d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
+                          sumOfTotalsInSpan[k] += d.totalsByYearAndGroupAndAggregation[i][group][aggrId]
+                        }
                       }
                     }
-                  let sumOfAverages: number = 0
-                  for (let aggrId in sumOfTotalsInSpanByAggregation)
-                    sumOfAverages += 1000000 * (sumOfMatchesInSpanByAggregation[aggrId] ? sumOfMatchesInSpanByAggregation[aggrId] : 0) / sumOfTotalsInSpanByAggregation[aggrId]
+                  let sumOfAverages: number[] = []
+                  for (let k: number = 0; k < $scope.bootstraps; k++) {
+                    sumOfAverages[k] = 0
+                    for (let aggrId in sumOfTotalsInSpanByAggregation[k]) if (sumOfTotalsInSpanByAggregation[k][aggrId])
+                      sumOfAverages[k] += 1000000 * (sumOfMatchesInSpanByAggregation[k][aggrId] ? sumOfMatchesInSpanByAggregation[k][aggrId] : 0) / sumOfTotalsInSpanByAggregation[k][aggrId]
+                  }
+                  sumOfAverages.sort((a: number, b: number) => a - b)
                   if ($scope.accumulation && $scope.graphType === 'individual') {
                     if (!accumulatingTotalByChart[chartIndex][group]) {
                       accumulatingTotalByChart[chartIndex][group] = 0
                       accumulatingMatchesByChart[chartIndex][group] = 0
                     }
-                    accumulatingMatchesByChart[chartIndex][group] += Object.keys(sumOfTotalsInSpanByAggregation).length !== 0 ? sumOfAverages / Object.keys(sumOfTotalsInSpanByAggregation).length : 0
-                    accumulatingTotalByChart[chartIndex][group] += sumOfTotalsInSpan
+                    let point: number =  Math.floor($scope.bootstraps / 2)
+                    accumulatingMatchesByChart[chartIndex][group] += Object.keys(sumOfTotalsInSpanByAggregation[point]).length !== 0 ? sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length : 0
+                    accumulatingTotalByChart[chartIndex][group] += sumOfTotalsInSpan[Math.floor($scope.bootstraps / 2)]
                     row.push(accumulatingMatchesByChart[chartIndex][group])
                     row.push(accumulatingTotalByChart[chartIndex][group])
                   } else {
-                    row.push(Object.keys(sumOfTotalsInSpanByAggregation).length !== 0 ? sumOfAverages / Object.keys(sumOfTotalsInSpanByAggregation).length : 0)
-                    if (!$scope.hideTotals && $scope.graphType === 'individual') row.push(sumOfTotalsInSpan)
+                    if (Object.keys(sumOfTotalsInSpanByAggregation).length !== 0) {
+                      let point: number =  Math.floor($scope.bootstraps / 2)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = Math.floor($scope.bootstraps / 100)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = Math.floor($scope.bootstraps / 20)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = Math.floor($scope.bootstraps / 10)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = $scope.bootstraps - 1 - Math.floor($scope.bootstraps / 10)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = $scope.bootstraps - 1 - Math.floor($scope.bootstraps / 20)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                      point = $scope.bootstraps - 1 - Math.floor($scope.bootstraps / 100)
+                      row.push(sumOfAverages[point] / Object.keys(sumOfTotalsInSpanByAggregation[point]).length)
+                    } else {
+                      row.push(0)
+                      row.push(0)
+                      row.push(0)
+                      row.push(0)
+                      row.push(0)
+                      row.push(0)
+                      row.push(0)
+                    }
+                    if (!$scope.hideTotals && $scope.graphType === 'individual') row.push(sumOfTotalsInSpan[Math.floor($scope.bootstraps / 2)])
                   }
                 }
                 rowsByChart[chartIndex++].push(row)
@@ -313,7 +367,7 @@ namespace app {
           (response: angular.IHttpPromiseCallbackArg <string>) => console.log(response)
         )
       }
-      $scope.$watchCollection('[selectedGrouping, graphType, movingSpan, hideTotals, avgType, separateGroups, accumulation]', (nv: any, ov: any) => {
+      $scope.$watchCollection('[selectedGrouping, graphType, movingSpan, hideTotals, avgType, separateGroups, accumulation, bootstraps]', (nv: any, ov: any) => {
         if (nv !== ov)
           updateGraphs()
       })

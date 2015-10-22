@@ -33,4 +33,7 @@ google-chart-view(ng-repeat="chart in charts",chart-definition="chart")
       label.btn.btn-sm.btn-primary(ng-model="avgType", uib-btn-radio="'total'") total
       label.btn.btn-sm.btn-primary(ng-model="avgType", uib-btn-radio="'text'") text average
       label.btn.btn-sm.btn-primary(ng-model="avgType", uib-btn-radio="'author'") author average
+  .form-group
+    label Number of bootstraps:
+    input.form-control(type="text",ng-model="bootstraps",ng-model-options="{updateOn : 'change blur'}",ng-disabled="avgType === 'total'")
     
