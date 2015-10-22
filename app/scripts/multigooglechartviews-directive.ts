@@ -218,7 +218,7 @@ namespace app {
                 isStacked: 'percent',
                 hAxis: {
                   title: 'year',
-                  format: ''
+                  format: '#'
                 },
                 intervals: { style: 'line' },
                 series: series,
