@@ -70,9 +70,8 @@ gulp.task('dist:images', function() {
 });
 
 gulp.task('dist:cssimages', function() {
-  return gulp.src(mainBowerFiles())
+  return gulp.src(mainBowerFiles("*/*.{png,jpg,jpeg}"))
     .pipe($.plumber({ errorHandler: $.notify.onError("<%= error.stack %>") }))
-    .pipe($.filter("**/*.{png,jpg,jpeg}"))
     .pipe($.print(function(path) { return "dist:cssimages(1) " + path; }))
     .pipe($.size({ title: 'dist:cssimages(1)' }))
     .pipe($.flatten())
@@ -82,9 +81,8 @@ gulp.task('dist:cssimages', function() {
 });
 
 gulp.task('dist:cssfonts', function() {
-  return gulp.src(mainBowerFiles())
+  return gulp.src(mainBowerFiles("**/*.{eot,svg,ttf,woff,woff2}"))
     .pipe($.plumber({ errorHandler: $.notify.onError("<%= error.stack %>") }))
-    .pipe($.filter("**/*.{eot,svg,ttf,woff,woff2}"))
     .pipe($.print(function(path) { return "dist:cssfonts(1) " + path; }))
     .pipe($.size({ title: 'dist:cssfonts(1)' }))
     .pipe($.size())
@@ -95,9 +93,8 @@ gulp.task('dist:cssfonts', function() {
 });
 
 gulp.task('dist:refs', function() {
-  return gulp.src(mainBowerFiles(), { base: 'app/' })
+  return gulp.src(mainBowerFiles("**/*.{svg,swf}"), { base: 'app/' })
     .pipe($.plumber({ errorHandler: $.notify.onError("<%= error.stack %>") }))
-    .pipe($.filter("**/*.{svg,swf}"))
     .pipe($.print(function(path) { return "dist:refs(1) " + path; }))
     .pipe($.size({ title: 'dist:refs(1)' }))
     .pipe(gulp.dest("dist"))
@@ -106,9 +103,8 @@ gulp.task('dist:refs', function() {
 });
 
 gulp.task('dist:refimages', function() {
-  return gulp.src(mainBowerFiles(), { base: 'app/' })
+  return gulp.src(mainBowerFiles("**/*.{png,jpg,jpeg}"), { base: 'app/' })
     .pipe($.plumber({ errorHandler: $.notify.onError("<%= error.stack %>") }))
-    .pipe($.filter("**/*.{png,jpg,jpeg}"))
     .pipe($.print(function(path) { return "dist:refimages(1) " + path; }))
     .pipe($.size({ title: 'dist:refimages(1)' }))
     .pipe($.cache($.imagemin({
