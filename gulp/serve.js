@@ -3,7 +3,7 @@ var browserSync = require('browser-sync').create();
 var $ = require("gulp-load-plugins")();
 
 gulp.task('serve', ['watch'], function() {
-  browserSync.init(['.tmp/styles/*.css','app/images/**/*'],{ server: { baseDir: ['app','.tmp'] },ghostMode: false });
+  browserSync.init(['.tmp/styles/*.css','app/images/**/*'],{ server: { baseDir: ['app','.tmp'] }, ghostMode: false });
   $.watch([
    ".tmp/*.html",
    ".tmp/scripts/**/*.js",
