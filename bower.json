@@ -10,7 +10,6 @@
     "yasgui-yasqe": "latest",
     "angular-bootstrap": "latest",
     "bootstrap": "latest",
-    "angular-ui-bootstrap": "latest",
     "angular-hotkeys": "chieffancypants/angular-hotkeys",
     "angular-utf8-base64": "latest",
     "ng-resize": "latest"
