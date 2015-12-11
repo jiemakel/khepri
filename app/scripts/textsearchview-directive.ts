@@ -1,5 +1,12 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  import s = fi.seco.sparql
+
+  export interface ITextSearchViewConfiguration {
+    textSearchQuery: string
+    constraintString: string
+  }
 
   interface ITextSearchViewScope extends angular.IScope {
     keywords: ITextSearchResult[]
@@ -50,7 +57,7 @@ namespace app {
       viewId: '@',
       queryId: '='
     }
-    constructor(private $q: angular.IQService, private sparqlService: SparqlService, private configService: ConfigService, private stateService: StateService) {
+    constructor(private $q: angular.IQService, private sparqlService: s.SparqlService, private configService: ConfigService, private stateService: StateService) {
       this.canceler = $q.defer();
     }
     public link: (...any) => void = ($scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
@@ -97,7 +104,7 @@ namespace app {
         filter[$scope.viewId] = true
         let constraintString: string = this.stateService.getConstraintString($scope.queryId, filter)
         this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + TextSearchViewDirective.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
-          (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+          (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
             let oldKeywords: ITextSearchResult[] = $scope.keywords
             let keywords: { [keyword: string]: boolean } = {}
             $scope.keywords = response.data.results.bindings.map(r => {

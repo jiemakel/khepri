@@ -5,13 +5,14 @@
     "angular": "~1.4.8",
     "jquery": "~2.1.4",
     "angular-ui-router": "~0.2.15",
+    "angular-sparql-service": "~1.0.0",
     "ngstorage": "~0.3.10",
-    "angular-http-auth": "~1.2.2",
-    "yasgui-yasqe": "~2.7.1",
+    "angular-http-auth": "~1.2.3",
+    "yasgui-yasqe": "~2.7.2",
     "angular-bootstrap": "~0.14.3",
-    "bootstrap": "~3.3.5",
+    "bootstrap": "~3.3.6",
     "angular-hotkeys": "chieffancypants/angular-hotkeys",
-    "angular-utf8-base64": "~0.0.0",
+    "angular-utf8-base64": "~0.0.5",
     "ng-resize": "~1.2.0"
   },
   "overrides": {

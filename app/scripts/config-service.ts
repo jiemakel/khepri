@@ -1,24 +1,18 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
 
-  class Config {
+  export class Config {
+    public mainView: string
     public sparqlEndpoint: string
     public prefixes: string
+    public viewConfiguration: {[id: string]: any}
   }
 
   export class ConfigService {
     public config: Config
-    constructor($localStorage) {
-      if (!$localStorage.config) {
-        $localStorage.config = new Config()
-        $localStorage.config.sparqlEndpoint = 'http://ldf.fi/ceecs/sparql'
-        $localStorage.config.prefixes = `
-          PREFIX text: <http://jena.apache.org/text#>
-          PREFIX cs: <http://ldf.fi/ceec-schema#>
-          PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-          PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-        `
+    constructor($localStorage: any, configuration: Config) {
+      if (true || !$localStorage.config) {
+        $localStorage.config = configuration
       }
       this.config = $localStorage.config
     }

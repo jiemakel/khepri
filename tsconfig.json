@@ -7,26 +7,30 @@
     },
     "filesGlob": [
         "app/scripts/**/*.ts",
+        "app/bower_components/**/*.d.ts",
+        "!app/bower_components/**/node_modules/**/*.ts",
+        "!app/bower_components/**/typings/**/*.ts",
+        "!app/bower_components/angular-ui-router/api/angular-ui-router.d.ts",
         "typings/**/*.d.ts"
     ],
     "files": [
         "app/scripts/app.ts",
+        "app/scripts/ceecs-config.ts",
         "app/scripts/config-service.ts",
         "app/scripts/googlechartview-directive.ts",
         "app/scripts/main-ctrl.ts",
         "app/scripts/multigooglechartviews-directive.ts",
         "app/scripts/resultlistview-directive.ts",
-        "app/scripts/sparql-service.ts",
         "app/scripts/state-service.ts",
         "app/scripts/textsearchview-directive.ts",
         "app/scripts/treeview-directive.ts",
+        "app/bower_components/angular-sparql-service/dist/sparql-service.d.ts",
         "typings/angular-ui-router/angular-ui-router.d.ts",
         "typings/angularjs/angular.d.ts",
         "typings/google.visualization/google.visualization.d.ts",
         "typings/jquery/jquery.d.ts",
         "typings/tsd.d.ts"
     ],
-    "exclude": [],
     "atom": {
         "rewriteTsconfig": true
     }

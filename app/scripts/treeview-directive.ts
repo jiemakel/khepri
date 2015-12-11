@@ -1,5 +1,7 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  import s = fi.seco.sparql
 
   class TreeView implements angular.IDirective {
     public restrict: string = 'E'
@@ -32,6 +34,12 @@ namespace app {
     queryId: string
     viewId: string
     constraints: TreeNode[]
+  }
+
+  export interface IPropertyTreeViewConfiguration {
+    getTreeQuery: string
+    getCountsQuery: string
+    constraintString: string
   }
 
   export class ClassTreeViewDirective extends TreeView {
@@ -71,7 +79,7 @@ namespace app {
       viewId: '@',
       queryId: '='
     }
-    constructor(private $q: angular.IQService, private configService: ConfigService, private stateService: StateService, public sparqlService: SparqlService) {
+    constructor(private $q: angular.IQService, private configService: ConfigService, private stateService: StateService, public sparqlService: s.SparqlService) {
       super()
       this.canceler = $q.defer();
     }
@@ -88,7 +96,7 @@ namespace app {
       }
       scope.isSelected = (id) => scope.constraints.indexOf(id) !== -1
       this.sparqlService.query(this.configService.config.sparqlEndpoint, ClassTreeViewDirective.getClassTreeQuery).then(
-        (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+        (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
           let parents: {[id: string]: {[id: string]: boolean}} = {}
           let classes: {[id: string]: TreeNode} = {}
           response.data.results.bindings.forEach(binding => {
@@ -114,7 +122,7 @@ namespace app {
         filter[scope.viewId] = true
         let constraintString: string = this.stateService.getConstraintString(scope.queryId, filter)
         this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + ClassTreeViewDirective.getClassCountsQuery.replace(/# CONSTRAINTS/g, constraintString)).then(
-          (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+          (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
             let counts: {[id: string] : number} = {}
             response.data.results.bindings.forEach(r => counts[r['class'].value] = parseInt(r['instances'].value, 10))
             scope.tree.forEach(tn => this.updateCounts(tn, counts))
