@@ -10,11 +10,15 @@
           div(ng-class="state=='filter' ? 'col-xs-2' : (state=='visualization' ? 'col-xs-12' : 'col-xs-3')")
             h4 Constrain
             text-search-view(view-id="text-search-view",query-id="query.name")
+            .form-group
+              select
+                option Education
+            class-tree-view(view-id="class-tree-view",query-id="query.name")
           div(ng-class="state=='filter' ? 'col-xs-10' : 'col-xs-9'",ng-show="state!='visualization'")
             h4 Filter
               button.btn.btn-sm.btn-default(ng-click="$parent.$parent.$parent.state= $parent.$parent.$parent.state=='filter' ? 'normal' : 'filter'")
                 span.glyphicon.glyphicon-resize-horizontal
-            result-list-view(width="state=='filter' ? 60 : 30",show-metadata="state=='filter'",view-id="result-list-view",query-id="query.name")
+            result-list-view(width="state=='filter' ? 60 : 40",show-metadata="state=='filter'",view-id="result-list-view",query-id="query.name")
       uib-tab(select="addQuery()")
         uib-tab-heading
           span.glyphicon.glyphicon-plus

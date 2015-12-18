@@ -1,5 +1,10 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  export class Query {
+    public active: boolean = false
+    constructor(public name: string) {}
+  }
 
   class State {
     private _queries: { [queryId: string]: QueryState } = {}

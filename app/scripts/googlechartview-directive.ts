@@ -1,4 +1,4 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
 
   export class ChartDefinition {

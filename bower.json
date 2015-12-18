@@ -1,19 +1,19 @@
 {
-  "name": "app",
+  "name": "khepri",
   "version": "0.0.0",
   "dependencies": {
-    "angular": "latest",
-    "jquery": "latest",
-    "angular-ui-router": "latest",
-    "ngstorage": "latest",
-    "angular-http-auth": "latest",
-    "yasgui-yasqe": "latest",
-    "angular-bootstrap": "latest",
-    "bootstrap": "latest",
-    "angular-ui-bootstrap": "latest",
+    "angular": "~1.4.8",
+    "jquery": "~2.1.4",
+    "angular-ui-router": "~0.2.15",
+    "angular-sparql-service": "~1.0.0",
+    "ngstorage": "~0.3.10",
+    "angular-http-auth": "~1.2.3",
+    "yasgui-yasqe": "~2.7.2",
+    "angular-bootstrap": "~0.14.3",
+    "bootstrap": "~3.3.6",
     "angular-hotkeys": "chieffancypants/angular-hotkeys",
-    "angular-utf8-base64": "latest",
-    "ng-resize": "latest"
+    "angular-utf8-base64": "~0.0.5",
+    "ng-resize": "~1.2.0"
   },
   "overrides": {
     "bootstrap": {

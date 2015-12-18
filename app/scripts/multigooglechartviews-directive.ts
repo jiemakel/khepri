@@ -1,5 +1,7 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  import s = fi.seco.sparql
 
   interface IMultiGoogleChartViewsScope extends angular.IScope {
     selectedGrouping: Grouping
@@ -14,6 +16,12 @@ namespace app {
     separateGroups: boolean
     accumulation: boolean
     bootstraps: number
+  }
+
+  export interface IMultiGoogleChartViewsConfiguration {
+    partitionsQuery: string
+    graphQuery: string
+    groupingString: string
   }
 
   class Data {
@@ -100,7 +108,7 @@ namespace app {
       'viewId': '@',
       'queries': '='
     }
-    constructor(private sparqlService: SparqlService, private configService: ConfigService, private stateService: StateService) {
+    constructor(private sparqlService: s.SparqlService, private configService: ConfigService, private stateService: StateService) {
     }
     public link: (...any) => void = ($scope: IMultiGoogleChartViewsScope, element: JQuery, attr: angular.IAttributes) => {
       $scope.avgType = 'total'
@@ -109,7 +117,7 @@ namespace app {
       $scope.bootstraps = 1
       $scope.selectedGrouping = null;
       this.sparqlService.query(this.configService.config.sparqlEndpoint, MultiGoogleChartViewsDirective.propertiesQuery).then(
-        (response: angular.IHttpPromiseCallbackArg <ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => $scope.availableGroupings = response.data.results.bindings.map(b => new Grouping(b['property'].value, b['propertyLabel'].value))
+        (response: angular.IHttpPromiseCallbackArg <s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => $scope.availableGroupings = response.data.results.bindings.map(b => new Grouping(b['property'].value, b['propertyLabel'].value))
         ,
         (response: angular.IHttpPromiseCallbackArg <string>) => console.log(response)
       )
@@ -151,7 +159,7 @@ namespace app {
         }
         sparqlQuery = this.configService.config.prefixes + sparqlQuery.replace(/# AGGREGATION/g, aggregation).replace(/# GROUPING/g, grouping)
         this.sparqlService.query(this.configService.config.sparqlEndpoint, sparqlQuery).then(
-          (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+          (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
             let d: Data = MultiGoogleChartViewsDirective.processData(response.data.results.bindings)
             let ocharts: {[name: string]: IdChart} = {}
             $scope.charts.forEach(c => ocharts[c.queryId] = c)
@@ -386,11 +394,11 @@ namespace app {
       }})
       updateGraphs()
     }
-    private static processData(bindings: {[id: string]: ISparqlBinding}[]): Data {
+    private static processData(bindings: {[id: string]: s.ISparqlBinding}[]): Data {
       let d: Data = new Data()
       let i: number = 0
       while (!bindings[i]['queryId']) {
-        let b: {[id: string]: ISparqlBinding} = bindings[i++]
+        let b: {[id: string]: s.ISparqlBinding} = bindings[i++]
         let year: number = parseInt(b['year'].value, 10)
         if (year > d.maxYear) d.maxYear = year
         if (year < d.minYear) d.minYear = year
@@ -406,7 +414,7 @@ namespace app {
         d.groups[g] = b['groupLabel'] ? b['groupLabel'].value : g
       }
       while (i < bindings.length) {
-        let b: {[id: string]: ISparqlBinding} = bindings[i++]
+        let b: {[id: string]: s.ISparqlBinding} = bindings[i++]
         let year: number = parseInt(b['year'].value, 10)
         if (!d.matchesByYearAndQueryAndGroupAndAggregation[year])
           d.matchesByYearAndQueryAndGroupAndAggregation[year] = {}

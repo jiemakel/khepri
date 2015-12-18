@@ -1,5 +1,7 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  import s = fi.seco.sparql
 
   class TreeView implements angular.IDirective {
     public restrict: string = 'E'
@@ -7,39 +9,41 @@ namespace app {
   }
 
   interface ITreeViewScope extends angular.IScope {
-    selectElement : (id : TreeNode, add?) => void
-    isSelected : (id : TreeNode) => boolean
-    tree : TreeNode[]
+    selectElement: (id: TreeNode, add?) => void
+    isSelected: (id: TreeNode) => boolean
+    tree: TreeNode[]
   }
 
   class TreeNode {
-    matchingInstances : number
-    constructor(public id : string, public label : string, public instances : number) {
-      this.matchingInstances=instances
+    public matchingInstances: number
+    constructor(public id: string, public label: string, public instances: number) {
+      this.matchingInstances = instances
     }
-    children : TreeNode[] = []
+    public children: TreeNode[] = []
   }
 
   class TreeViewConstraints implements IConstraint {
-    order = 5
+    public order: number = 5
     public clone(): TreeViewConstraints {
       return new TreeViewConstraints(this.constraintString, this.values.slice())
     }
-    constructor(public constraintString : string,public values: TreeNode[]) { }
+    constructor(public constraintString: string, public values: TreeNode[]) { }
   }
 
   interface IClassTreeViewScope extends ITreeViewScope {
-    queryId : string
+    queryId: string
     viewId: string
-    constraints : TreeNode[]
+    constraints: TreeNode[]
+  }
+
+  export interface IPropertyTreeViewConfiguration {
+    getTreeQuery: string
+    getCountsQuery: string
+    constraintString: string
   }
 
   export class ClassTreeViewDirective extends TreeView {
-    scope = {
-      viewId : '@',
-      queryId : '='
-    }
-    private static getClassTreeQuery = `
+    private static getClassTreeQuery: string = `
       PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX cs: <http://ldf.fi/ceec-schema#>
@@ -60,7 +64,7 @@ namespace app {
         }
       }
     `
-    private static getClassCountsQuery = `
+    private static getClassCountsQuery: string = `
       PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX cs: <http://ldf.fi/ceec-schema#>
@@ -71,38 +75,37 @@ namespace app {
       }
       GROUP BY ?class
     `
-    private canceler : angular.IDeferred<{}>
-    constructor(private $q : angular.IQService, private configService : ConfigService, private stateService : StateService, public sparqlService : SparqlService) {
+    public scope: {[id: string]: string} = {
+      viewId: '@',
+      queryId: '='
+    }
+    constructor(private $q: angular.IQService, private configService: ConfigService, private stateService: StateService, public sparqlService: s.SparqlService) {
       super()
       this.canceler = $q.defer();
     }
-    private updateCounts = (node : TreeNode, counts : {[id:string] : number}) => {
-      node.matchingInstances = counts[node.id] ? counts[node.id] : 0
-      node.children.forEach(node => this.updateCounts(node,counts));
-    }
-    link = (scope: IClassTreeViewScope, element: JQuery, attr: angular.IAttributes) => {
+    public link: (...any) => void = (scope: IClassTreeViewScope, element: JQuery, attr: angular.IAttributes) => {
       scope.constraints = []
-      scope.selectElement = (value,add = false) => {
+      scope.selectElement = (value, add = false) => {
         if (!add) scope.constraints = [value]; else scope.constraints.push(value)
-        var constraintString = ""
+        let constraintString: string = ''
         scope.constraints.forEach(constraint => {
-          constraintString +=`{ ?id crm:P28_custody_surrendered_by/cs:education/rdfs:subClassOf* <${constraint.id}> } UNION`
+          constraintString += `{ ?id crm:P28_custody_surrendered_by/cs:education/rdfs:subClassOf* <${constraint.id}> } UNION`
         });
-        constraintString = constraintString.substr(0,constraintString.length-6);
-        this.stateService.setConstraint(scope.queryId,scope.viewId,new TreeViewConstraints(constraintString,scope.constraints));
+        constraintString = constraintString.substr(0, constraintString.length - 6);
+        this.stateService.setConstraint(scope.queryId, scope.viewId, new TreeViewConstraints(constraintString, scope.constraints));
       }
-      scope.isSelected = (id) => scope.constraints.indexOf(id)!=-1
-      this.sparqlService.query(this.configService.config.sparqlEndpoint,ClassTreeViewDirective.getClassTreeQuery).then(
-        (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
-          var parents : {[id:string]:{[id:string]:boolean}}= {}
-          var classes : {[id:string]:TreeNode}= {}
+      scope.isSelected = (id) => scope.constraints.indexOf(id) !== -1
+      this.sparqlService.query(this.configService.config.sparqlEndpoint, ClassTreeViewDirective.getClassTreeQuery).then(
+        (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
+          let parents: {[id: string]: {[id: string]: boolean}} = {}
+          let classes: {[id: string]: TreeNode} = {}
           response.data.results.bindings.forEach(binding => {
             if (binding['subClass']) {
-              let subClass = binding['subClass'].value
-              if (!parents[subClass]) parents[subClass]={}
-              parents[subClass][binding['superClass'].value]=true
+              let subClass: string = binding['subClass'].value
+              if (!parents[subClass]) parents[subClass] = {}
+              parents[subClass][binding['superClass'].value] = true
             } else {
-              classes[binding['class'].value]=new TreeNode(binding['class'].value,binding['classLabel'].value,parseInt(binding['instances'].value))
+              classes[binding['class'].value] = new TreeNode(binding['class'].value, binding['classLabel'].value, parseInt(binding['instances'].value, 10))
             }
           })
           scope.tree = []
@@ -111,24 +114,28 @@ namespace app {
                 classes[pid].children.push(classes[id])
           }
         },
-        (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
+        (response: angular.IHttpPromiseCallbackArg<string>) => console.log(response)
       )
-      scope.$on('updateConstraint',(e:angular.IAngularEvent,constraintString:string,constraints:{}) => {
+      scope.$on('updateConstraint', (e: angular.IAngularEvent, queryId: string, viewId: string) => {
         this.canceler.resolve();
-        var keywords = ""
-        for (let key in constraints) if (constraints[key].keywords) constraints[key].keywords.forEach(keyword => keywords+=this.sparqlService.stringToSPARQLString(keyword));
-        this.sparqlService.query(this.configService.config.sparqlEndpoint,this.configService.config.prefixes+ClassTreeViewDirective.getClassCountsQuery.replace(/# CONSTRAINTS/g,constraintString)).then(
-          (response : angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
-            var counts : {[id:string] : number} = {}
-            response.data.results.bindings.forEach(r => counts[r['class'].value]=parseInt(r['instances'].value))
-            scope.tree.forEach(tn => this.updateCounts(tn,counts))
+        let filter: {[id: string]: boolean} = {}
+        filter[scope.viewId] = true
+        let constraintString: string = this.stateService.getConstraintString(scope.queryId, filter)
+        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + ClassTreeViewDirective.getClassCountsQuery.replace(/# CONSTRAINTS/g, constraintString)).then(
+          (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
+            let counts: {[id: string] : number} = {}
+            response.data.results.bindings.forEach(r => counts[r['class'].value] = parseInt(r['instances'].value, 10))
+            scope.tree.forEach(tn => this.updateCounts(tn, counts))
           }
           ,
-          (response : angular.IHttpPromiseCallbackArg<string>) => console.log(response)
+          (response: angular.IHttpPromiseCallbackArg<string>) => console.log(response)
         )
       })
     }
-
+    private canceler: angular.IDeferred<{}>
+    private updateCounts: (node: TreeNode, counts: {[id: string] : number}) => void = (node: TreeNode, counts: {[id: string] : number}) => {
+      node.matchingInstances = counts[node.id] ? counts[node.id] : 0
+      node.children.forEach(cnode => this.updateCounts(cnode, counts));
+    }
   }
-
 }

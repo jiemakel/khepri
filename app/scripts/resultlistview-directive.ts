@@ -1,5 +1,12 @@
-namespace app {
+namespace fi.seco.khepri {
   'use strict'
+
+  import s = fi.seco.sparql
+
+  export interface IResultListViewConfiguration {
+    resultQuery: string
+    constraintString: string
+  }
 
   interface IResultListViewScope extends angular.IScope {
     metadataKeys: string[]
@@ -23,33 +30,9 @@ namespace app {
   }
 
   export class ResultListViewDirective implements angular.IDirective {
-    private static resultQuery: string = `
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-      PREFIX cs: <http://ldf.fi/ceec-schema#>
-      SELECT ?id ?label ?fulltext ?match ?metadataAuthor ?metadataYear {
-        {
-          SELECT DISTINCT ?id {
-            # CONSTRAINTS
-          }
-        }
-        ?id skos:prefLabel ?label .
-        ?id cs:fulltext ?fulltext .
-        ?id crm:P28_custody_surrendered_by/skos:prefLabel ?metadataAuthor .
-        ?id cs:year ?metadataYear .
-        OPTIONAL {
-          FILTER("<SPARQL_REGEX>"!="(?:)")
-          ?id cs:fulltext ?fulltext .
-          FILTER REGEX(?fulltext,"<SPARQL_REGEX>","si")
-          BIND(REPLACE(?fulltext,".*?(<SPARQL_REGEX>).*","$1","si") AS ?match)
-        }
-      }
-      ORDER BY <ORDER_BY>
-      LIMIT 50
-    `
     public restrict: string = 'E'
     public templateUrl: string = 'partials/resultlistview.html'
-    constructor(private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $sce: angular.ISCEService, private sparqlService: SparqlService, private configService: ConfigService, private stateService: StateService) {
+    constructor(private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $sce: angular.ISCEService, private sparqlService: s.SparqlService, private configService: ConfigService, private stateService: StateService) {
       this.canceler = $q.defer();
     }
     public scope: {[id: string]: string} = {
@@ -61,6 +44,7 @@ namespace app {
     public link: (...any) => void = ($scope: IResultListViewScope, element: JQuery, attr: angular.IAttributes) => {
       $scope.orderBy = 'match'
       $scope.orderByDescending = false
+      let viewConfiguration: IResultListViewConfiguration = this.configService.config.viewConfiguration[attr.$normalize($scope.viewId)]
       let query: () => void = () => {
         let sparqlRegex: string = '(?:'
         let constraints: {[id: string]: IConstraint} = this.stateService.getQueryState($scope.queryId).constraints
@@ -78,8 +62,8 @@ namespace app {
         let constraintString: string = this.stateService.getConstraintString($scope.queryId, filter)
         this.canceler.resolve();
         this.canceler = this.$q.defer();
-        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + ResultListViewDirective.resultQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<SPARQL_REGEX>/g, sparqlRegex).replace(/<ORDER_BY>/g, $scope.orderByDescending ? 'DESC(?' + $scope.orderBy + ')' : '?' + $scope.orderBy)).then(
-          (response: angular.IHttpPromiseCallbackArg<ISparqlBindingResult<{[id: string]: ISparqlBinding}>>) => {
+        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + viewConfiguration.resultQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<SPARQL_REGEX>/g, sparqlRegex).replace(/<ORDER_BY>/g, $scope.orderByDescending ? 'DESC(?' + $scope.orderBy + ')' : '?' + $scope.orderBy)).then(
+          (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
             $scope.metadataKeys = []
             if ($scope.showMetadata) response.data.head.vars.forEach(v => { if (v.substring(0, 8) === 'metadata') $scope.metadataKeys.push(v.substring(8))})
             $scope.results = response.data.results.bindings.map(r => {

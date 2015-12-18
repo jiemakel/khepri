@@ -6,7 +6,7 @@ html(lang="en",ng-app="app",ng-hint)
     // build:css(app) styles/vendor.css
     // bower:css
     link(rel='stylesheet', href='bower_components/bootstrap/dist/css/bootstrap.css')
-    link(rel='stylesheet', href='bower_components/angular-hotkeys/build/hotkeys.min.css')
+    link(rel='stylesheet', href='bower_components/angular-hotkeys/build/hotkeys.css')
     // endbower
     link(rel='stylesheet', href='bower_components/yasgui-yasqe/dist/yasqe.css')
     // endbuild
@@ -36,12 +36,13 @@ html(lang="en",ng-app="app",ng-hint)
     script(src='bower_components/angular/angular.js')
     script(src='bower_components/jquery/dist/jquery.js')
     script(src='bower_components/angular-ui-router/release/angular-ui-router.js')
+    script(src='bower_components/angular-sparql-service/dist/sparql-service.js')
     script(src='bower_components/ngstorage/ngStorage.js')
     script(src='bower_components/angular-http-auth/src/http-auth-interceptor.js')
     script(src='bower_components/yasgui-yasqe/dist/yasqe.bundled.min.js')
     script(src='bower_components/angular-bootstrap/ui-bootstrap-tpls.js')
     script(src='bower_components/bootstrap/dist/js/bootstrap.js')
-    script(src='bower_components/angular-hotkeys/build/hotkeys.min.js')
+    script(src='bower_components/angular-hotkeys/build/hotkeys.js')
     script(src='bower_components/angular-utf8-base64/angular-utf8-base64.js')
     script(src='bower_components/ng-resize/index.js')
     // endbower
@@ -51,13 +52,12 @@ html(lang="en",ng-app="app",ng-hint)
     script(src="scripts/app.js")
     script(src="scripts/config-service.js")
     script(src="scripts/state-service.js")
-    script(src="scripts/sparql-service.js")
     script(src="scripts/textsearchview-directive.js")
     script(src="scripts/resultlistview-directive.js")
     script(src="scripts/treeview-directive.js")
     script(src="scripts/googlechartview-directive.js")
     script(src="scripts/multigooglechartviews-directive.js")
-    script(src="scripts/main-ctrl.js")
+    script(type="text/javascript") document.write('<script src="scripts/'+window.location.hash.replace(/.*\?/,'')+'"></scr'+'ipt>')
     // inject:partials
     // endinject
     // endbuild
