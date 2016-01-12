@@ -19,6 +19,7 @@
         "app/scripts/config-service.ts",
         "app/scripts/googlechartview-directive.ts",
         "app/scripts/multigooglechartviews-directive.ts",
+        "app/scripts/multitreeviews-directive.ts",
         "app/scripts/resultlistview-directive.ts",
         "app/scripts/state-service.ts",
         "app/scripts/textsearchview-directive.ts",

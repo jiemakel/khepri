@@ -56,8 +56,12 @@ html(lang="en",ng-app="app",ng-hint)
     script(src="scripts/resultlistview-directive.js")
     script(src="scripts/treeview-directive.js")
     script(src="scripts/googlechartview-directive.js")
+    script(src="scripts/multitreeviews-directive.js")
     script(src="scripts/multigooglechartviews-directive.js")
-    script(type="text/javascript") document.write('<script src="scripts/'+window.location.hash.replace(/.*\?/,'')+'"></scr'+'ipt>')
+    script(type="text/javascript").
+      var config = window.location.hash.replace(/.*\?/,'');
+      if (config === '' || config.charAt(0) === '#') config = 'ceecs-config.js';
+      document.write('<script src="scripts/'+config+'"></scr'+'ipt>');
     // inject:partials
     // endinject
     // endbuild

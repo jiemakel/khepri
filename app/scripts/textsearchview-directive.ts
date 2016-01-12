@@ -29,28 +29,6 @@ namespace fi.seco.khepri {
   }
 
   export class TextSearchViewDirective implements angular.IDirective {
-    private static textSearchQuery: string = `
-      PREFIX text: <http://jena.apache.org/text#>
-      PREFIX cs: <http://ldf.fi/ceec-schema#>
-      SELECT ?keyword (COUNT(?tid) AS ?totalInstances) (COUNT(?id) AS ?matchingInstances) {
-        {
-          ?tid text:query "<LUCENE_REGEX>" .
-          ?tid a cs:Letter .
-          ?tid cs:fulltext ?fulltext .
-          FILTER(REGEX(?fulltext, "<SPARQL_REGEX>", "i"))
-          BIND(LCASE(REPLACE(REPLACE(?fulltext, ".*?(<SPARQL_REGEX>).*", "$1", "si"),"\\\\s+"," ")) AS ?keyword)
-        } UNION {
-          ?id text:query "<LUCENE_REGEX>" .
-          ?id a cs:Letter .
-          ?id cs:fulltext ?fulltext .
-          FILTER(REGEX(?fulltext, "<SPARQL_REGEX>", "i"))
-          # CONSTRAINTS
-          BIND(LCASE(REPLACE(REPLACE(?fulltext, ".*?(<SPARQL_REGEX>).*", "$1", "si"),"\\\\s+"," ")) AS ?keyword)
-        }
-      }
-      GROUP BY ?keyword
-      ORDER BY DESC(?matchingInstances)
-    `
     public restrict: string = 'E'
     public templateUrl: string = 'partials/textsearchview.html'
     public scope: {[id: string]: string} = {
@@ -61,6 +39,7 @@ namespace fi.seco.khepri {
       this.canceler = $q.defer();
     }
     public link: (...any) => void = ($scope: ITextSearchViewScope, element: JQuery, attr: angular.IAttributes) => {
+      let viewConfiguration: ITextSearchViewConfiguration = this.configService.config.viewConfiguration[attr.$normalize($scope.viewId)]
       $scope.constraints = {}
       $scope.keywords = []
       $scope.setConstraint = (value: string, replace: boolean = false) => {
@@ -87,11 +66,7 @@ namespace fi.seco.khepri {
           luceneQuery = luceneQuery.substr(0, luceneQuery.length - 1)
           sparqlRegex = '(?:\\\\b' + sparqlRegex.substr(0, sparqlRegex.length - 1) + '\\\\b)'
           jsRegex = '(?:\\b' + jsRegex.substr(0, jsRegex.length - 1) + '\\b)'
-          constraintString = `
-            ?id text:query "${luceneQuery}" .
-            ?id cs:fulltext ?fulltext .
-            FILTER(REGEX(?fulltext,"${sparqlRegex}","i"))
-          `
+          constraintString = viewConfiguration.constraintString.replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex)
         }
         this.stateService.setConstraint($scope.queryId, $scope.viewId, new TextSearchConstraint(constraintString, sparqlRegex, jsRegex, luceneQuery));
       }
@@ -103,7 +78,7 @@ namespace fi.seco.khepri {
         let filter: {[id: string]: boolean} = {}
         filter[$scope.viewId] = true
         let constraintString: string = this.stateService.getConstraintString($scope.queryId, filter)
-        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + TextSearchViewDirective.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
+        this.sparqlService.query(this.configService.config.sparqlEndpoint, this.configService.config.prefixes + viewConfiguration.textSearchQuery.replace(/# CONSTRAINTS/g, constraintString).replace(/<LUCENE_REGEX>/g, luceneQuery).replace(/<SPARQL_REGEX>/g, sparqlRegex), {timeout: this.canceler.promise}).then(
           (response: angular.IHttpPromiseCallbackArg<s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => {
             let oldKeywords: ITextSearchResult[] = $scope.keywords
             let keywords: { [keyword: string]: boolean } = {}

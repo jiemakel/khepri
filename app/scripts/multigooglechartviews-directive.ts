@@ -21,6 +21,7 @@ namespace fi.seco.khepri {
   export interface IMultiGoogleChartViewsConfiguration {
     partitionsQuery: string
     graphQuery: string
+    constraintString: string
     groupingString: string
   }
 
@@ -46,62 +47,6 @@ namespace fi.seco.khepri {
   }
 
   export class MultiGoogleChartViewsDirective implements angular.IDirective {
-    private static propertiesQuery: string = `
-      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      SELECT ?property (SAMPLE(?l) AS ?propertyLabel) {
-        {
-          SELECT DISTINCT ?property {
-            ?id crm:P28_custody_surrendered_by ?person .
-            ?person ?property ?object .
-            FILTER isIRI(?object)
-          }
-        }
-        ?property skos:prefLabel|rdfs:label ?l .
-        FILTER (LANG(?l) = 'en' || LANG(?l) = '')
-      }
-      GROUP BY ?property
-    `
-    private static graphQuery: string = `
-      PREFIX cs: <http://ldf.fi/ceec-schema#>
-      PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
-      PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-      PREFIX pf: <http://jena.hpl.hp.com/ARQ/property#>
-      SELECT ?queryId ?group (SAMPLE(?l2) AS ?groupLabel) ?aggrId ?year (MAX(?mwords) AS ?matching) (MAX(?twords) as ?total) {
-        {
-          {
-            SELECT ?queryId ?group (SAMPLE(?l) AS ?l2) ?aggrId ?year ((COUNT(?foo)-COUNT(DISTINCT ?id)) AS ?mwords) {
-              { # CONSTRAINTHOLDER
-                # CONSTRAINTS
-                BIND(<REGEX> AS ?regex)
-                BIND(<QUERY_ID> AS ?queryId)
-              } # /CONSTRAINTHOLDER
-              ?id cs:year ?year .
-              ?id cs:fulltext ?fulltext .
-              ?foo pf:strSplit (?fulltext ?regex) .
-              # AGGREGATION
-              # GROUPING
-            }
-            GROUP BY ?queryId ?group ?aggrId ?year
-          }
-        } UNION {
-          {
-            SELECT ?group (SAMPLE(?l) AS ?l2) ?aggrId ?year (SUM(STRDT(?wc, xsd:integer)) AS ?twords) {
-              ?id a cs:Letter .
-              ?id cs:year ?year .
-              ?id cs:wordcount ?wc .
-              # AGGREGATION
-              # GROUPING
-            }
-            GROUP BY ?group ?aggrId ?year
-          }
-        }
-      }
-      GROUP BY ?queryId ?group ?year ?aggrId
-      ORDER BY ?queryId ?group ?year
-    `
     public restrict: string = 'E'
     public templateUrl: string = 'partials/multigooglechartviews.html'
     public scope: {[id: string]: string} = {
@@ -111,12 +56,13 @@ namespace fi.seco.khepri {
     constructor(private sparqlService: s.SparqlService, private configService: ConfigService, private stateService: StateService) {
     }
     public link: (...any) => void = ($scope: IMultiGoogleChartViewsScope, element: JQuery, attr: angular.IAttributes) => {
+      let viewConfiguration: IMultiGoogleChartViewsConfiguration = this.configService.config.viewConfiguration[attr.$normalize($scope.viewId)]
       $scope.avgType = 'total'
       $scope.movingSpan = 20
       $scope.graphType = 'individual'
       $scope.bootstraps = 1
       $scope.selectedGrouping = null;
-      this.sparqlService.query(this.configService.config.sparqlEndpoint, MultiGoogleChartViewsDirective.propertiesQuery).then(
+      this.sparqlService.query(this.configService.config.sparqlEndpoint, viewConfiguration.partitionsQuery).then(
         (response: angular.IHttpPromiseCallbackArg <s.ISparqlBindingResult<{[id: string]: s.ISparqlBinding}>>) => $scope.availableGroupings = response.data.results.bindings.map(b => new Grouping(b['property'].value, b['propertyLabel'].value))
         ,
         (response: angular.IHttpPromiseCallbackArg <string>) => console.log(response)
@@ -132,7 +78,7 @@ namespace fi.seco.khepri {
         this.stateService.setConstraint(chartDefinition.queryId, $scope.viewId, new SimpleConstraint(constraint, 2))
       }
       let updateGraphs: () => void = () => {
-        const queryParts: string[] = MultiGoogleChartViewsDirective.graphQuery.split(/[\{\}] # \/?CONSTRAINTHOLDER/)
+        const queryParts: string[] = viewConfiguration.graphQuery.split(/[\{\}] # \/?CONSTRAINTHOLDER/)
         let sparqlQuery: string = queryParts[0]
         $scope.queries.forEach(query => {
           let regex: string = '(?:'

@@ -1,0 +1,6 @@
+div(ng-repeat="view in views")
+  label {{view.label}}
+  tree-view(view-id="view.id",query-id="query.name",view-configuration="view.viewConfiguration")
+.form-group
+  select(ng-model="newView",ng-options="availableView.label for availableView in availableViews")
+    option
