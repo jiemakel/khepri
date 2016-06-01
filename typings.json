@@ -1,0 +1,8 @@
+{
+  "globalDevDependencies": {
+    "angular": "registry:dt/angular#1.5.0+20160517064839",
+    "angular-ui-router": "registry:dt/angular-ui-router#1.1.5+20160521151413",
+    "google.visualization": "registry:dt/google.visualization#0.0.0+20160317120654",
+    "jquery": "registry:dt/jquery#1.10.0+20160417213236"
+  }
+}
