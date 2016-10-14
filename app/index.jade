@@ -5,6 +5,7 @@ html(lang="en",ng-app="app",ng-hint)
     meta(name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width")
     // build:css(app) styles/vendor.css
     // bower:css
+    link(rel='stylesheet', href='bower_components/yasgui-yasqe/dist/yasqe.css')
     link(rel='stylesheet', href='bower_components/bootstrap/dist/css/bootstrap.css')
     link(rel='stylesheet', href='bower_components/angular-hotkeys/build/hotkeys.css')
     // endbower
@@ -39,7 +40,7 @@ html(lang="en",ng-app="app",ng-hint)
     script(src='bower_components/angular-sparql-service/dist/sparql-service.js')
     script(src='bower_components/ngstorage/ngStorage.js')
     script(src='bower_components/angular-http-auth/src/http-auth-interceptor.js')
-    script(src='bower_components/yasgui-yasqe/dist/yasqe.bundled.min.js')
+    script(src='bower_components/yasgui-yasqe/dist/yasqe.bundled.js')
     script(src='bower_components/angular-bootstrap/ui-bootstrap-tpls.js')
     script(src='bower_components/bootstrap/dist/js/bootstrap.js')
     script(src='bower_components/angular-hotkeys/build/hotkeys.js')
@@ -60,7 +61,7 @@ html(lang="en",ng-app="app",ng-hint)
     script(src="scripts/multigooglechartviews-directive.js")
     script(type="text/javascript").
       var config = window.location.hash.replace(/.*\?/,'');
-      if (config === '' || config.charAt(0) === '#') config = 'ceecs-config.js';
+      if (config === '' || config.charAt(0) === '#') config = 'ceec-config.js';
       document.write('<script src="scripts/'+config+'"></scr'+'ipt>');
     // inject:partials
     // endinject

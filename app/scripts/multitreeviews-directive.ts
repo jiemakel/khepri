@@ -19,7 +19,8 @@ namespace fi.seco.khepri {
     public restrict: string = 'E'
     public templateUrl: string = 'partials/multitreeviews.html'
     public scope: {[id: string]: string} = {
-      'viewId': '@'
+      'viewId': '@',
+      'queryId': '='
     }
     constructor(private sparqlService: s.SparqlService, private configService: ConfigService, private stateService: StateService) {
     }

@@ -86,7 +86,7 @@ PREFIX cs: <http://ldf.fi/ceec-schema#>
 SELECT ?class (COUNT(DISTINCT ?p) AS ?instances) {
 # CONSTRAINTS
 ?id crm:P28_custody_surrendered_by ?p .
-?p <PROPERTY>/rdfs:subClassOf* ?class .
+?p cs:education/rdfs:subClassOf* ?class .
 }
 GROUP BY ?class`,
     constraintString: '?id crm:P28_custody_surrendered_by/cs:education/rdfs:subClassOf* <CONSTRAINT_ID>'
@@ -116,10 +116,11 @@ PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX pf: <http://jena.hpl.hp.com/ARQ/property#>
+PREFIX sf: <http://ldf.fi/functions#>
 SELECT ?queryId ?group (SAMPLE(?l2) AS ?groupLabel) ?aggrId ?year (MAX(?mwords) AS ?matching) (MAX(?twords) as ?total) {
   {
     {
-      SELECT ?queryId ?group (SAMPLE(?l) AS ?l2) ?aggrId ?year ((COUNT(?foo)-COUNT(DISTINCT ?id)) AS ?mwords) {
+      SELECT ?queryId ?group ?aggrId ?year ((COUNT(?foo)-COUNT(DISTINCT ?id)) AS ?mwords) {
         { # CONSTRAINTHOLDER
           # CONSTRAINTS
           BIND(<REGEX> AS ?regex)

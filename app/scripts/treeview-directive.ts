@@ -50,6 +50,7 @@ namespace fi.seco.khepri {
       let viewConfiguration: ITreeViewConfiguration = $scope.viewConfiguration ? $scope.viewConfiguration : this.configService.config.viewConfiguration[attr.$normalize($scope.viewId)]
       $scope.constraints = []
       $scope.selectElement = (value, add = false) => {
+        console.log($scope.queryId, $scope.viewId)
         if (!add) $scope.constraints = [value]; else $scope.constraints.push(value)
         let constraintString: string = ''
         $scope.constraints.forEach(constraint => {

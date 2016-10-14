@@ -16,7 +16,6 @@
     "files": [
         "app/scripts/app.ts",
         "app/scripts/ceec-config.ts",
-        "app/scripts/ceecs-config.ts",
         "app/scripts/config-service.ts",
         "app/scripts/googlechartview-directive.ts",
         "app/scripts/multigooglechartviews-directive.ts",

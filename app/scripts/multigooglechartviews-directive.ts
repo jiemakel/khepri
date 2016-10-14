@@ -92,10 +92,10 @@ namespace fi.seco.khepri {
           let filter: {[id: string]: boolean} = {}
           filter[$scope.viewId] = true
           let constraintString: string = this.stateService.getConstraintString(query.name, filter)
-          sparqlQuery += '{' + queryParts[1].replace(/<QUERY_ID>/g, this.sparqlService.stringToSPARQLString(query.name)).replace(/# CONSTRAINTS/g, constraintString).replace(/<REGEX>/g, this.sparqlService.stringToSPARQLString(regex)) + '} UNION'
+          sparqlQuery += '{' + queryParts[1].replace(/<QUERY_ID>/g, s.SparqlService.stringToSPARQLString(query.name)).replace(/# CONSTRAINTS/g, constraintString).replace(/<REGEX>/g, s.SparqlService.stringToSPARQLString(regex)) + '} UNION'
         })
         sparqlQuery = sparqlQuery.substring(0, sparqlQuery.length - 6) + queryParts[2]
-        let grouping: string = $scope.selectedGrouping ? `?id crm:P28_custody_surrendered_by/<${$scope.selectedGrouping.id}> ?group . ?group skos:prefLabel ?l . FILTER (LANG(?l) = 'en' || LANG(?l) = '')` : '';
+        let grouping: string = $scope.selectedGrouping ? `?id crm:P28_custody_surrendered_by/<${$scope.selectedGrouping.id}> ?group . ?group sf:preferredLanguageLiteral (skos:prefLabel rdfs:label 'en' '' ?l)` : '';
         let aggregation: string
         switch ($scope.avgType) {
           case 'total': aggregation = ''; break

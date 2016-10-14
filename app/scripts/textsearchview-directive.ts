@@ -83,7 +83,7 @@ namespace fi.seco.khepri {
             let oldKeywords: ITextSearchResult[] = $scope.keywords
             let keywords: { [keyword: string]: boolean } = {}
             $scope.keywords = response.data.results.bindings.map(r => {
-              let ret: ITextSearchResult = this.sparqlService.bindingsToObject<ITextSearchResult>(r)
+              let ret: ITextSearchResult = s.SparqlService.bindingsToObject<ITextSearchResult>(r)
               keywords[ret.keyword] = true
               return ret
             })
