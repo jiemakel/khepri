@@ -44,13 +44,13 @@ namespace fi.seco.khepri {
     public restrict: string = 'E'
     public templateUrl: string = 'partials/treeview.html'
     constructor(private $q: angular.IQService, private configService: ConfigService, private stateService: StateService, public sparqlService: s.SparqlService) {
+      console.log($q, configService)
       this.canceler = $q.defer();
     }
     public link: (...any) => void = ($scope: ITreeViewScope, element: JQuery, attr: angular.IAttributes) => {
       let viewConfiguration: ITreeViewConfiguration = $scope.viewConfiguration ? $scope.viewConfiguration : this.configService.config.viewConfiguration[attr.$normalize($scope.viewId)]
       $scope.constraints = []
       $scope.selectElement = (value, add = false) => {
-        console.log($scope.queryId, $scope.viewId)
         if (!add) $scope.constraints = [value]; else $scope.constraints.push(value)
         let constraintString: string = ''
         $scope.constraints.forEach(constraint => {

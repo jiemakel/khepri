@@ -7,15 +7,12 @@ Khepri, a modular, configurable data exploration (and in the future, editing) to
 ### Prequisites
 
  1. Make sure you have [Node.js](https://nodejs.org/en/) installed (for example using [nvm](https://github.com/creationix/nvm)).
- 1. Make sure you have [TSD](http://definitelytyped.org/tsd/) installed (`npm install -g tsd`)
  1. Make sure you have [Bower](http://bower.io/) installed (`npm install -g bower`)
  1. Make sure you have [Gulp](http://gulpjs.com/) installed (`npm install -g gulp`)
 
 ### Setting up the build environment
 
- 1. run `npm install`
- 1. run `tsd install`
- 1. run `bower install`
+ 1. run `yarn` or `npm install`
 
 ### Building
 
