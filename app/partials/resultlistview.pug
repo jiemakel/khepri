@@ -8,7 +8,7 @@ table(infinite-scroll="scrollInstances()",infinite-scroll-parent,infinite-scroll
     th(ng-repeat="key in metadataKeys",ng-click="setOrderBy('metadata'+key)") {{::key}} 
       span.glyphicon.glyphicon-triangle-top(ng-show="orderBy=='metadata'+key && !orderByDescending")
       span.glyphicon.glyphicon-triangle-bottom(ng-show="orderBy=='metadata'+key && orderByDescending")
-  tr.item.selected(ng-repeat="result in results",ng-click="filter(result,$event.ctrlKey||$event.metaKey)",ng-style="result.filtered ? {'text-decoration': 'line-through'} : {}",uib-popover-template="'popover.html'",popover-trigger="mouseenter",popover-title="{{result.label}}",popover-placement="bottom")
+  tr.item.selected(ng-repeat="result in results",ng-click="filter(result,$event.ctrlKey||$event.metaKey)",ng-style="result.filtered ? {'text-decoration': 'line-through'} : {}",uib-popover-template="'popover.html'",popover-trigger="'mouseenter'",popover-title="{{result.label}}",popover-placement="bottom")
     td(ng-if="result.snippet",ng-bind-html="result.snippet.before").text-right 
     th(ng-if="result.snippet").text-center &nbsp;{{::result.snippet.match}}&nbsp;
     td(ng-if="result.snippet",ng-bind-html="result.snippet.after").text-left
