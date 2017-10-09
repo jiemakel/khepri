@@ -328,7 +328,7 @@ var fi;
                                         var before = void 0;
                                         var lastBefore = void 0;
                                         var after = void 0;
-                                        var regexp = new RegExp('(' + r['match'].value + ')');
+                                        var regexp = new RegExp('(\\b' + r['match'].value + '\\b)');
                                         var parts = ft.split(regexp);
                                         ft = '';
                                         for (var i = 0; i < parts.length; i += 2) {
