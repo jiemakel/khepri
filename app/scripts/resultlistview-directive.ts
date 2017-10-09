@@ -78,7 +78,7 @@ namespace fi.seco.khepri {
                 let before: string
                 let lastBefore: string
                 let after: string
-                let regexp: RegExp = new RegExp('(' + r['match'].value + ')')
+                let regexp: RegExp = new RegExp('(\\b' + r['match'].value + '\\b)')
                 let parts: string[] = ft.split(regexp)
                 ft = ''
                 for (let i: number = 0; i < parts.length; i += 2) {
