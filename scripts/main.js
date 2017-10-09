@@ -1247,7 +1247,7 @@ module.run(['$templateCache', function($templateCache) {
     '    <th colspan="3" ng-click="setOrderBy(\'match\')">Context <span class="glyphicon glyphicon-triangle-top" ng-show="orderBy==\'match\' &amp;&amp; !orderByDescending"></span><span class="glyphicon glyphicon-triangle-bottom" ng-show="orderBy==\'match\' &amp;&amp; orderByDescending"></span></th>\n' +
     '    <th ng-repeat="key in metadataKeys" ng-click="setOrderBy(\'metadata\'+key)">{{::key}} <span class="glyphicon glyphicon-triangle-top" ng-show="orderBy==\'metadata\'+key &amp;&amp; !orderByDescending"></span><span class="glyphicon glyphicon-triangle-bottom" ng-show="orderBy==\'metadata\'+key &amp;&amp; orderByDescending"></span></th>\n' +
     '  </tr>\n' +
-    '  <tr class="item selected" ng-repeat="result in results" ng-click="filter(result,$event.ctrlKey||$event.metaKey)" ng-style="result.filtered ? {\'text-decoration\': \'line-through\'} : {}" uib-popover-template="\'popover.html\'" popover-trigger="mouseenter" popover-title="{{result.label}}" popover-placement="bottom">\n' +
+    '  <tr class="item selected" ng-repeat="result in results" ng-click="filter(result,$event.ctrlKey||$event.metaKey)" ng-style="result.filtered ? {\'text-decoration\': \'line-through\'} : {}" uib-popover-template="\'popover.html\'" popover-trigger="\'mouseenter\'" popover-title="{{result.label}}" popover-placement="bottom">\n' +
     '    <td class="text-right" ng-if="result.snippet" ng-bind-html="result.snippet.before"> </td>\n' +
     '    <th class="text-center" ng-if="result.snippet">&nbsp;{{::result.snippet.match}}&nbsp;</th>\n' +
     '    <td class="text-left" ng-if="result.snippet" ng-bind-html="result.snippet.after"></td>\n' +
