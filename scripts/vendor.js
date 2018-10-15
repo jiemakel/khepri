@@ -46736,9 +46736,9 @@ var fi;
                         return this.$http(angular.extend({
                             method: 'POST',
                             url: endpoint,
-                            data: 'query=' + encodeURIComponent(query),
+                            data: query,
                             headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'Content-Type': 'application/sparql-query',
                                 'Accept': 'application/sparql-results+json'
                             }
                         }, params));
