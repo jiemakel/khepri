@@ -4,8 +4,8 @@
       uib-tab(ng-repeat="query in queries",active="query.active")
         uib-tab-heading
           span(ng-show="!editingName",ng-click="query.active && (editingName=true)") {{query.name}}
-          input(ng-show="editingName",ng-model="newName",ng-init="newName=query.name",ng-blur="renameQuery(query,newName)",ng-keyup="($event.keyCode == 13 && (renameQuery(query,newName) || true) && (editingName=false)) || ($event.keyCode == 27 && (editingName=false))")
-          span.glyphicon.glyphicon-remove(ng-show="query.active",ng-click="removeQuery(query)")
+          input(ng-show="editingName",ng-model="newName",ng-init="newName=query.name.substring(3)",ng-blur="renameQuery(query,newName,$index)",ng-keyup="($event.keyCode == 13 && (renameQuery(query,newName,$index) || true) && (editingName=false)) || ($event.keyCode == 27 && (editingName=false))")
+          span.glyphicon.glyphicon-remove(ng-show="query.active",ng-click="removeQuery(query,$index)")
         .container-fluid: .row
           div(ng-class="state=='filter' ? 'col-xs-2' : (state=='visualization' ? 'col-xs-12' : 'col-xs-3')")
             h4 Constrain

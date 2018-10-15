@@ -1674,9 +1674,9 @@ gifsicle@^3.0.0:
     bin-wrapper "^3.0.0"
     logalot "^2.0.0"
 
-gift@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/gift/-/gift-0.7.0.tgz#6ff386e0af3211b941ab9e1aff5976adc92c2428"
+gift@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/gift/-/gift-0.6.1.tgz#c1698e6b6887164ed978a01095423cff65b8e79f"
   dependencies:
     underscore "1.x.x"
 
@@ -1969,10 +1969,10 @@ gulp-flatten@0.3.1:
   version "0.5.4"
   resolved "git://github.com/jiemakel/gulp-gh-pages#75a72ce95fdc887a8ed9cfe92e43b4d6d3d257da"
   dependencies:
-    gift "^0.6.1"
+    gift "^0.7.0"
     gulp-util "^3.0.7"
-    readable-stream "^2.0.2"
-    rimraf "^2.4.3"
+    readable-stream "^2.0.4"
+    rimraf "^2.4.4"
     vinyl-fs "^2.2.1"
     wrap-promise "^1.0.1"
 
@@ -4414,7 +4414,7 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-rimraf@^2.2.6, rimraf@^2.2.8, rimraf@^2.4.0, rimraf@^2.4.4, rimraf@^2.5.4, rimraf@~2.5.1, rimraf@~2.5.4, rimraf@2:
+rimraf@^2.2.6, rimraf@^2.2.8, rimraf@^2.4.0, rimraf@^2.4.3, rimraf@^2.5.4, rimraf@~2.5.1, rimraf@~2.5.4, rimraf@2:
   version "2.5.4"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.5.4.tgz#96800093cbf1a0c86bd95b4625467535c29dfa04"
   dependencies:

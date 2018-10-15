@@ -179,8 +179,8 @@ ORDER BY ?queryId ?group ?year
     queries: k.Query[]
     state: string
     addQuery: () => void
-    renameQuery: (oldQuery: k.Query, newName: string) => void
-    removeQuery: (query: k.Query) => void
+    renameQuery: (oldQuery: k.Query, newName: string, index: number) => void
+    removeQuery: (query: k.Query, index: number) => void
     resize: () => void
   }
 
@@ -188,25 +188,24 @@ ORDER BY ?queryId ?group ?year
     constructor(private $scope: IMainScope, private stateService: k.StateService, private $timeout: angular.ITimeoutService) {
       $scope.queries = []
       $scope.state = 'normal'
-      stateService.getQueryState('unnamed 1')
-      $scope.queries.push(new k.Query('unnamed 1'))
+      stateService.getQueryState('1: unnamed')
+      $scope.queries.push(new k.Query('1: unnamed'))
       $scope.queries[0].active = true
-      let count: number = 2
       $scope.addQuery = () => {
-        let name: string = 'unnamed ' + count++
+        let name: string = ($scope.queries.length +1) + ': unnamed'
         stateService.getQueryState(name)
         let nq: k.Query = new k.Query(name)
         nq.active = true
         $scope.queries.push(nq)
       }
-      $scope.renameQuery = (oldQuery: k.Query, newName: string) => {
-        stateService.getQueries()[newName] = stateService.getQueries()[oldQuery.name]
+      $scope.renameQuery = (oldQuery: k.Query, newName: string, index: number) => {
+        stateService.getQueries()[(index+1) + ': '+newName] = stateService.getQueries()[oldQuery.name]
         delete stateService.getQueries[oldQuery.name]
-        oldQuery.name = newName
+        oldQuery.name = (index+1) + ': ' + newName
       }
-      $scope.removeQuery = (query: k.Query) => {
+      $scope.removeQuery = (query: k.Query, index: number) => {
         delete stateService.getQueries[query.name]
-        $scope.queries.splice($scope.queries.indexOf(query), 1)
+        $scope.queries.splice(index, 1)
       }
       $scope.resize = () => $timeout(() => $scope.$broadcast('resize'))
     }
